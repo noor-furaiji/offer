@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoMatch Korea – Car Request Form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0d2240;--accent:#e4572e;--bg:#f4f6f9;--line:#d8dee8;--text:#1b2433;--muted:#667085;--green:#25d366}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Cairo,system-ui,sans-serif;font-size:15px;line-height:1.45}
+  html[lang=ar] body{font-family:Cairo,Inter,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:16px}
+  header{background:var(--navy);color:#fff;border-radius:14px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .brand{font-weight:700;font-size:20px;letter-spacing:.3px}
+  .brand span{color:var(--accent)}
+  .sub{font-size:13px;opacity:.85;margin-top:2px}
+  .langs{display:flex;gap:6px;flex-wrap:wrap}
+  .langs button{background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer}
+  .langs button.on{background:#fff;color:var(--navy);font-weight:700}
+  h1{font-size:19px;margin:20px 0 4px}
+  .intro{color:var(--muted);margin:0 0 14px}
+  form{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .sec{font-weight:700;color:var(--navy);font-size:14px;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--accent);display:inline-block}
+  html[lang=ar] .sec{text-transform:none;letter-spacing:0}
+  .sec:first-child{margin-top:0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .full{grid-column:1/-1}
+  label{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
+  label .req{color:var(--accent)}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fbfcfe;color:var(--text)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);border-color:var(--navy)}
+  textarea{min-height:80px;resize:vertical}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chips label{font-weight:500;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:7px 12px;cursor:pointer;margin:0;background:#fbfcfe}
+  .chips input{width:auto;margin:0}
+  .chips label:has(input:checked){border-color:var(--navy);background:#e9eef6}
+  .btn{display:block;width:100%;margin-top:20px;padding:14px;border:0;border-radius:10px;background:var(--navy);color:#fff;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+  .err{color:#c0362c;font-size:13px;margin-top:10px;display:none}
+  #result{display:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
+  #result h2{font-size:17px;margin:0 0 8px}
+  pre{white-space:pre-wrap;background:#f6f8fb;border:1px solid var(--line);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;margin:0 0 12px;max-height:340px;overflow:auto}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .actions a,.actions button{display:flex;justify-content:center;align-items:center;gap:8px;padding:13px;border-radius:10px;font:inherit;font-weight:700;text-decoration:none;border:0;cursor:pointer}
+  .wa{background:var(--green);color:#fff}
+  .cp{background:#e9eef6;color:var(--navy)}
+  .hint{color:var(--muted);font-size:12.5px;margin:6px 0 0;line-height:1.4}
+  .note{color:var(--muted);font-size:13px;margin-top:10px}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin:18px 0 8px}
+  footer b{color:var(--navy)}
+  @media(max-width:560px){.grid,.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">AutoMatch <span>Korea</span></div>
+      <div class="sub" data-t="tagline"></div>
+    </div>
+    <div class="langs">
+      <button type="button" data-lang="ar">العربية</button>
+      <button type="button" data-lang="en">English</button>
+      <button type="button" data-lang="fr">Français</button>
+      <button type="button" data-lang="es">Español</button>
+      <button type="button" data-lang="bg">Български</button>
+      <button type="button" data-lang="sq">Shqip</button>
+    </div>
+  </header>
+
+  <h1 data-t="title"></h1>
+  <p class="intro" data-t="intro"></p>
+
+  <form id="f" novalidate>
+    <div class="sec" data-t="s1"></div>
+    <div class="grid">
+      <div><label><span data-t="name"></span></label><input name="name"></div>
+      <div><label data-t="company"></label><input name="company"></div>
+      <div><label><span data-t="country"></span></label><input name="country"></div>
+      <div><label data-t="phone"></label><input name="phone" type="tel" placeholder="+..."></div>
+      <div class="full"><label><span data-t="buyer"></span></label><select name="buyer" id="buyer"></select></div>
+    </div>
+
+    <div class="sec" data-t="s2"></div>
+    <div class="grid">
+      <div class="full"><label><span data-t="type"></span></label>
+        <div class="chips" id="types"></div></div>
+      <div class="full"><label><span data-t="model"></span></label><input name="model" data-ph="modelPh"></div>
+      <div><label data-t="yearFrom"></label><select name="yearFrom" class="years"></select></div>
+      <div><label data-t="yearTo"></label><select name="yearTo" class="years"></select></div>
+      <div><label data-t="kmFrom"></label><select name="kmFrom" class="kms"></select></div>
+      <div><label data-t="kmTo"></label><select name="kmTo" class="kms"></select></div>
+      <div><label data-t="qty"></label><input name="qty" type="number" min="1" value="1"></div>
+      <div><label data-t="fuel"></label><select name="fuel" id="fuel"></select></div>
+      <div><label data-t="gear"></label><select name="gear" id="gear"></select></div>
+      <div><label data-t="color"></label><input name="color" data-ph="colorPh"></div>
+      <div><label data-t="options"></label><input name="options" data-ph="optionsPh"></div>
+      <div class="full"><label><span data-t="acc"></span></label><select name="acc" id="acc"></select>
+        <input name="accOther" id="accOther" data-ph="accOtherPh" style="display:none;margin-top:8px"></div>
+    </div>
+
+    <div class="sec" data-t="s3"></div>
+    <div class="grid">
+      <div><label><span data-t="budget"></span></label><input name="budget" data-ph="budgetPh"></div>
+      <div><label data-t="total"></label><input name="total" data-ph="totalPh"></div>
+      <div><label data-t="port"></label><input name="port" data-ph="portPh"></div>
+      <div class="full"><label data-t="ship"></label><select name="ship" id="ship"></select><p class="hint" data-t="shipHint"></p></div>
+      <div><label data-t="when"></label><select name="when" id="when"></select></div>
+      <div class="full"><label data-t="notes"></label><textarea name="notes" data-ph="notesPh"></textarea></div>
+    </div>
+
+    <button class="btn" type="submit" data-t="submit"></button>
+    <div class="err" id="err" data-t="err"></div>
+  </form>
+
+  <div id="result">
+    <h2 data-t="ready"></h2>
+    <pre id="msg"></pre>
+    <div class="actions">
+      <a class="wa" id="wa" href="#" target="_blank" rel="noopener" data-t="sendWa"></a>
+      <button class="cp" type="button" id="cp" data-t="copy"></button>
+    </div>
+    <p class="note" data-t="manual"></p>
+  </div>
+
+  <footer><b>Noor</b> · WhatsApp <b dir="ltr">+82 10-5189-9201</b> · automatchkorea.com</footer>
+</div>
+
+<script>
+const PHONE = "821051899201";
+const L = {
+ en:{dir:"ltr",tagline:"Used cars, SUVs, vans, buses & trucks from Korea",title:"Vehicle Request Form",
+  intro:"Tell us what you need. When you finish, press the button and your request will be sent to us on WhatsApp.",
+  s1:"Your details",s2:"Vehicle you want",s3:"Budget & shipping",
+  name:"Full name",company:"Company",country:"Country",phone:"Your WhatsApp / phone",
+  type:"Vehicle type",model:"Brand & model",modelPh:"e.g. Hyundai Tucson, Kia Sorento, Hyundai Mighty",
+  yearFrom:"Year from",yearTo:"Year to",kmFrom:"Mileage from",kmTo:"Mileage to",qty:"Quantity",fuel:"Fuel",gear:"Gearbox",
+  color:"Preferred color",colorPh:"e.g. white, black, any",options:"Must-have options",optionsPh:"e.g. sunroof, 4WD, 7 seats",
+  budget:"Budget per vehicle (USD)",budgetPh:"e.g. 12,000 – 15,000",port:"Destination port",portPh:"e.g. Mersin, Sohar, Varna",
+  ship:"Shipping",when:"When do you need it?",notes:"Other notes",notesPh:"Anything else we should know",
+  submit:"Send my request",err:"Please fill in at least one field.",
+  ready:"Your request is ready",sendWa:"Send on WhatsApp",copy:"Copy text",copied:"Copied ✓",
+  manual:"If WhatsApp doesn't open, copy the text and send it to +82 10-5189-9201.",
+  any:"Any",
+  types:["Sedan","SUV","Van / Minivan","Pickup","Bus","Truck","Other"],
+  kms:["Any","Under 50,000 km","Under 100,000 km","Under 150,000 km","Under 200,000 km"],
+  fuels:["Any","Gasoline","Diesel","LPG","Hybrid","Electric"],
+  gears:["Any","Automatic","Manual"],
+  ships:["Not sure – advise me","RoRo (car drives onto the ship)","Container (car loaded inside a closed box)"],shipHint:"RoRo: the car is driven onto a big car-carrier ship. Usually cheaper, good for 1 car, SUVs, buses and trucks. • Container: the car is locked inside a closed steel container. Safer, can carry 2–4 cars together.",
+  whens:["As soon as possible","Within 1 month","1–3 months","Just checking prices"],
+  buyer:"You are",buyers:["— Select —","Car dealer / company","Personal use (for myself)","Starting a car business now"],acc:"Accident history accepted",accs:["— Select —","No accident at all","Small scratches / repaint only","Outer panels replaced OK (doors, fenders, hood, trunk) – no frame damage","Small frame repair OK if the price is good","Any condition – best price","Other – write what is OK / not OK for you"],accOtherPh:"e.g. bumper replaced is OK, but no airbag or frame damage",total:"Total budget (USD)",totalPh:"e.g. 50,000 for all vehicles",
+  msgHead:"New vehicle request – AutoMatch Korea",
+  k:{buyer:"Buyer type",acc:"Accident",total:"Total budget (USD)",name:"Name",company:"Company",country:"Country",phone:"Phone",type:"Type",model:"Model",year:"Year",km:"Mileage",qty:"Quantity",fuel:"Fuel",gear:"Gearbox",color:"Color",options:"Options",budget:"Budget (USD)",port:"Port",ship:"Shipping",when:"Timing",notes:"Notes"}},
+ ar:{dir:"rtl",msgLang:"en",tagline:"سيارات مستعملة، SUV، فانات، باصات وشاحنات من كوريا",title:"نموذج طلب سيارة",
+  intro:"أخبرنا بما تحتاجه. عند الانتهاء اضغط الزر وسيصلنا طلبك على واتساب.",
+  s1:"بياناتك",s2:"السيارة المطلوبة",s3:"الميزانية والشحن",
+  name:"الاسم الكامل",company:"الشركة",country:"الدولة",phone:"رقم الواتساب / الهاتف",
+  type:"نوع المركبة",model:"الماركة والموديل",modelPh:"مثال: هيونداي توسان، كيا سورينتو، هيونداي مايتي",
+  yearFrom:"سنة الصنع من",yearTo:"سنة الصنع إلى",kmFrom:"عدد الكيلومترات من",kmTo:"عدد الكيلومترات إلى",qty:"الكمية",fuel:"الوقود",gear:"ناقل الحركة",
+  color:"اللون المفضل",colorPh:"مثال: أبيض، أسود، أي لون",options:"المواصفات المطلوبة",optionsPh:"مثال: فتحة سقف، دفع رباعي، 7 مقاعد",
+  budget:"الميزانية لكل سيارة (دولار)",budgetPh:"مثال: 12,000 – 15,000",port:"ميناء الوصول",portPh:"مثال: مرسين، صحار، العقبة",
+  ship:"طريقة الشحن",when:"متى تحتاجها؟",notes:"ملاحظات أخرى",notesPh:"أي تفاصيل إضافية",
+  submit:"إرسال الطلب",err:"يرجى تعبئة حقل واحد على الأقل.",
+  ready:"طلبك جاهز",sendWa:"إرسال عبر واتساب",copy:"نسخ النص",copied:"تم النسخ ✓",
+  manual:"إذا لم يفتح واتساب، انسخ النص وأرسله إلى ‎+82 10-5189-9201.",
+  any:"أي",
+  types:["سيدان","SUV","فان / ميني فان","بيك أب","باص","شاحنة","أخرى"],
+  kms:["أي","أقل من 50,000 كم","أقل من 100,000 كم","أقل من 150,000 كم","أقل من 200,000 كم"],
+  fuels:["أي","بنزين","ديزل","غاز LPG","هايبرد","كهربائي"],
+  gears:["أي","أوتوماتيك","عادي (يدوي)"],
+  ships:["غير متأكد – انصحوني","رورو RoRo (السيارة تُقاد إلى داخل السفينة)","حاوية (السيارة داخل صندوق حديدي مغلق)"],shipHint:"رورو RoRo: تُقاد السيارة إلى داخل سفينة كبيرة لنقل السيارات. عادةً أرخص، ومناسب لسيارة واحدة أو SUV أو باصات وشاحنات. • الحاوية: توضع السيارة داخل حاوية حديدية مغلقة. أكثر أماناً، تتسع لـ 2–4 سيارات معاً.",
+  whens:["في أقرب وقت","خلال شهر","من 1 إلى 3 أشهر","فقط استفسار عن الأسعار"],
+  buyer:"أنت",buyers:["— اختر —","تاجر سيارات / شركة","استخدام شخصي","أريد أن أبدأ تجارة السيارات الآن"],acc:"الحوادث المقبولة",accs:["— اختر —","بدون أي حادث","خدوش بسيطة / رش طلاء فقط","تبديل قطع خارجية مقبول (أبواب، رفارف، كبوت، صندوق) – بدون ضرر في الشاصي","تصليح بسيط في الشاصي مقبول إذا كان السعر جيد","أي حالة – أفضل سعر","أخرى – اكتب ما هو مقبول / غير مقبول لك"],accOtherPh:"مثال: تبديل الصدام مقبول، لكن بدون ضرر في الإيرباغ أو الشاصي",total:"الميزانية الإجمالية (دولار)",totalPh:"مثال: 50,000 لكل السيارات",
+  msgHead:"طلب سيارة جديد – AutoMatch Korea",
+  k:{buyer:"نوع المشتري",acc:"الحوادث",total:"الميزانية الإجمالية (دولار)",name:"الاسم",company:"الشركة",country:"الدولة",phone:"الهاتف",type:"النوع",model:"الموديل",year:"السنة",km:"الكيلومترات",qty:"الكمية",fuel:"الوقود",gear:"ناقل الحركة",color:"اللون",options:"المواصفات",budget:"الميزانية (دولار)",port:"الميناء",ship:"الشحن",when:"الموعد",notes:"ملاحظات"}},
+ fr:{dir:"ltr",msgLang:"en",tagline:"Voitures d'occasion, SUV, vans, bus et camions de Corée",title:"Formulaire de demande de véhicule",
+  intro:"Dites-nous ce qu'il vous faut. À la fin, appuyez sur le bouton : votre demande nous sera envoyée sur WhatsApp.",
+  s1:"Vos coordonnées",s2:"Véhicule recherché",s3:"Budget et expédition",
+  name:"Nom complet",company:"Société",country:"Pays",phone:"Votre WhatsApp / téléphone",
+  type:"Type de véhicule",model:"Marque et modèle",modelPh:"ex. Hyundai Tucson, Kia Sorento, Hyundai Mighty",
+  yearFrom:"Année de",yearTo:"Année à",kmFrom:"Kilométrage de",kmTo:"Kilométrage à",qty:"Quantité",fuel:"Carburant",gear:"Boîte de vitesses",
+  color:"Couleur préférée",colorPh:"ex. blanc, noir, peu importe",options:"Options indispensables",optionsPh:"ex. toit ouvrant, 4x4, 7 places",
+  budget:"Budget par véhicule (USD)",budgetPh:"ex. 12 000 – 15 000",port:"Port de destination",portPh:"ex. Alger, Oran, Casablanca",
+  ship:"Expédition",when:"Quand en avez-vous besoin ?",notes:"Autres remarques",notesPh:"Toute autre information utile",
+  submit:"Envoyer ma demande",err:"Veuillez remplir au moins un champ.",
+  ready:"Votre demande est prête",sendWa:"Envoyer sur WhatsApp",copy:"Copier le texte",copied:"Copié ✓",
+  manual:"Si WhatsApp ne s'ouvre pas, copiez le texte et envoyez-le au +82 10-5189-9201.",
+  any:"Peu importe",
+  types:["Berline","SUV","Van / Minivan","Pick-up","Bus","Camion","Autre"],
+  kms:["Peu importe","Moins de 50 000 km","Moins de 100 000 km","Moins de 150 000 km","Moins de 200 000 km"],
+  fuels:["Peu importe","Essence","Diesel","GPL","Hybride","Électrique"],
+  gears:["Peu importe","Automatique","Manuelle"],
+  ships:["Pas sûr – conseillez-moi","RoRo (la voiture roule dans le navire)","Conteneur (voiture dans une caisse fermée)"],shipHint:"RoRo : la voiture est conduite à bord d'un grand navire transporteur. Souvent moins cher, idéal pour 1 voiture, SUV, bus et camions. • Conteneur : la voiture est enfermée dans un conteneur en acier. Plus sûr, peut transporter 2 à 4 voitures ensemble.",
+  whens:["Dès que possible","Sous 1 mois","1 à 3 mois","Je compare les prix"],
+  buyer:"Vous êtes",buyers:["— Choisir —","Concessionnaire / société","Usage personnel","Je démarre une activité automobile"],acc:"Historique d'accident accepté",accs:["— Choisir —","Aucun accident","Petites rayures / repeinture seulement","Éléments extérieurs remplacés OK (portes, ailes, capot, coffre) – châssis intact","Petite réparation du châssis OK si le prix est bon","Peu importe – meilleur prix","Autre – précisez ce qui est OK / pas OK pour vous"],accOtherPh:"ex. pare-chocs remplacé OK, mais pas d'airbag ni de châssis touché",total:"Budget total (USD)",totalPh:"ex. 50 000 pour tous les véhicules",
+  msgHead:"Nouvelle demande de véhicule – AutoMatch Korea",
+  k:{buyer:"Type d'acheteur",acc:"Accident",total:"Budget total (USD)",name:"Nom",company:"Société",country:"Pays",phone:"Téléphone",type:"Type",model:"Modèle",year:"Année",km:"Kilométrage",qty:"Quantité",fuel:"Carburant",gear:"Boîte",color:"Couleur",options:"Options",budget:"Budget (USD)",port:"Port",ship:"Expédition",when:"Délai",notes:"Remarques"}},
+ es:{dir:"ltr",msgLang:"en",tagline:"Autos usados, SUV, furgonetas, autobuses y camiones de Corea",title:"Formulario de solicitud de vehículo",
+  intro:"Díganos lo que necesita. Al terminar, pulse el botón y su solicitud nos llegará por WhatsApp.",
+  s1:"Sus datos",s2:"Vehículo que busca",s3:"Presupuesto y envío",
+  name:"Nombre completo",company:"Empresa",country:"País",phone:"Su WhatsApp / teléfono",
+  type:"Tipo de vehículo",model:"Marca y modelo",modelPh:"ej. Hyundai Tucson, Kia Sorento, Hyundai Mighty",
+  yearFrom:"Año desde",yearTo:"Año hasta",kmFrom:"Kilometraje desde",kmTo:"Kilometraje hasta",qty:"Cantidad",fuel:"Combustible",gear:"Caja de cambios",
+  color:"Color preferido",colorPh:"ej. blanco, negro, cualquiera",options:"Opciones imprescindibles",optionsPh:"ej. techo solar, 4x4, 7 asientos",
+  budget:"Presupuesto por vehículo (USD)",budgetPh:"ej. 12.000 – 15.000",port:"Puerto de destino",portPh:"ej. Valparaíso, Cartagena, Callao",
+  ship:"Envío",when:"¿Cuándo lo necesita?",notes:"Otras notas",notesPh:"Cualquier otra información útil",
+  submit:"Enviar mi solicitud",err:"Por favor, rellene al menos un campo.",
+  ready:"Su solicitud está lista",sendWa:"Enviar por WhatsApp",copy:"Copiar texto",copied:"Copiado ✓",
+  manual:"Si WhatsApp no se abre, copie el texto y envíelo al +82 10-5189-9201.",
+  any:"Cualquiera",
+  types:["Sedán","SUV","Furgoneta / Minivan","Pickup","Autobús","Camión","Otro"],
+  fuels:["Cualquiera","Gasolina","Diésel","GLP","Híbrido","Eléctrico"],
+  gears:["Cualquiera","Automática","Manual"],
+  ships:["No estoy seguro – aconséjenme","RoRo (el auto entra rodando al barco)","Contenedor (el auto va dentro de una caja cerrada)"],shipHint:"RoRo: el auto se conduce dentro de un gran buque portavehículos. Normalmente más barato, ideal para 1 auto, SUV, autobuses y camiones. • Contenedor: el auto va cerrado dentro de un contenedor de acero. Más seguro, caben 2–4 autos juntos.",
+  whens:["Lo antes posible","En 1 mes","1–3 meses","Solo consulto precios"],
+  buyer:"Usted es",buyers:["— Seleccione —","Concesionario / empresa","Uso personal","Estoy empezando un negocio de autos"],acc:"Historial de accidentes aceptado",accs:["— Seleccione —","Sin ningún accidente","Solo rayones / repintado","Paneles exteriores cambiados OK (puertas, aletas, capó, maletero) – sin daño en chasis","Pequeña reparación de chasis OK si el precio es bueno","Cualquier estado – mejor precio","Otro – escriba qué es aceptable / no aceptable para usted"],accOtherPh:"ej. parachoques cambiado OK, pero sin daño en airbag ni chasis",total:"Presupuesto total (USD)",totalPh:"ej. 50.000 para todos los vehículos"},
+ bg:{dir:"ltr",msgLang:"en",tagline:"Употребявани автомобили, SUV, бусове, автобуси и камиони от Корея",title:"Формуляр за запитване за автомобил",
+  intro:"Кажете ни какво търсите. Когато приключите, натиснете бутона и запитването ще ни бъде изпратено по WhatsApp.",
+  s1:"Вашите данни",s2:"Желан автомобил",s3:"Бюджет и доставка",
+  name:"Име и фамилия",company:"Фирма",country:"Държава",phone:"Вашият WhatsApp / телефон",
+  type:"Тип превозно средство",model:"Марка и модел",modelPh:"напр. Hyundai Tucson, Kia Sorento, Hyundai Mighty",
+  yearFrom:"Година от",yearTo:"Година до",kmFrom:"Пробег от",kmTo:"Пробег до",qty:"Брой",fuel:"Гориво",gear:"Скоростна кутия",
+  color:"Предпочитан цвят",colorPh:"напр. бял, черен, без значение",options:"Задължителни екстри",optionsPh:"напр. шибидах, 4x4, 7 места",
+  budget:"Бюджет за автомобил (USD)",budgetPh:"напр. 12 000 – 15 000",port:"Пристанище на доставка",portPh:"напр. Варна, Бургас",
+  ship:"Доставка",when:"Кога ви трябва?",notes:"Други бележки",notesPh:"Всичко друго, което трябва да знаем",
+  submit:"Изпрати запитването",err:"Моля, попълнете поне едно поле.",
+  ready:"Запитването ви е готово",sendWa:"Изпрати по WhatsApp",copy:"Копирай текста",copied:"Копирано ✓",
+  manual:"Ако WhatsApp не се отвори, копирайте текста и го изпратете на +82 10-5189-9201.",
+  any:"Без значение",
+  types:["Седан","SUV","Бус / Миниван","Пикап","Автобус","Камион","Друго"],
+  fuels:["Без значение","Бензин","Дизел","Газ (LPG)","Хибрид","Електрически"],
+  gears:["Без значение","Автоматична","Ръчна"],
+  ships:["Не съм сигурен – посъветвайте ме","RoRo (колата влиза на кораба на колела)","Контейнер (колата е в затворен контейнер)"],shipHint:"RoRo: колата се вкарва с шофиране в голям кораб за превоз на автомобили. Обикновено по-евтино, подходящо за 1 кола, SUV, автобуси и камиони. • Контейнер: колата е заключена в затворен стоманен контейнер. По-сигурно, побира 2–4 коли заедно.",
+  whens:["Възможно най-скоро","До 1 месец","1–3 месеца","Само проверявам цени"],
+  buyer:"Вие сте",buyers:["— Изберете —","Автокъща / фирма","За лично ползване","Започвам бизнес с автомобили"],acc:"Приемлива история на щети",accs:["— Изберете —","Без никакви щети","Само драскотини / пребоядисване","Сменени външни панели OK (врати, калници, преден капак, багажник) – без щети по шасито","Малък ремонт на шасито OK при добра цена","Всякакво състояние – най-добра цена","Друго – напишете какво е приемливо / неприемливо за вас"],accOtherPh:"напр. сменена броня OK, но без задействани еърбеци или щети по шасито",total:"Общ бюджет (USD)",totalPh:"напр. 50 000 за всички автомобили"},
+ sq:{dir:"ltr",msgLang:"en",tagline:"Makina të përdorura, SUV, furgonë, autobusë dhe kamionë nga Koreja",title:"Formular kërkese për automjet",
+  intro:"Na tregoni çfarë ju nevojitet. Kur të mbaroni, shtypni butonin dhe kërkesa juaj do të na dërgohet në WhatsApp.",
+  s1:"Të dhënat tuaja",s2:"Automjeti që kërkoni",s3:"Buxheti dhe transporti",
+  name:"Emri i plotë",company:"Kompania",country:"Shteti",phone:"WhatsApp / telefoni juaj",
+  type:"Lloji i automjetit",model:"Marka dhe modeli",modelPh:"p.sh. Hyundai Tucson, Kia Sorento, Hyundai Mighty",
+  yearFrom:"Viti nga",yearTo:"Viti deri",kmFrom:"Kilometrazhi nga",kmTo:"Kilometrazhi deri",qty:"Sasia",fuel:"Karburanti",gear:"Kambio",
+  color:"Ngjyra e preferuar",colorPh:"p.sh. e bardhë, e zezë, çfarëdo",options:"Opsionet e domosdoshme",optionsPh:"p.sh. tavan xhami, 4x4, 7 vende",
+  budget:"Buxheti për automjet (USD)",budgetPh:"p.sh. 12.000 – 15.000",port:"Porti i destinacionit",portPh:"p.sh. Durrës, Vlorë, Bar",
+  ship:"Transporti",when:"Kur ju duhet?",notes:"Shënime të tjera",notesPh:"Çdo gjë tjetër që duhet të dimë",
+  submit:"Dërgo kërkesën",err:"Ju lutemi plotësoni të paktën një fushë.",
+  ready:"Kërkesa juaj është gati",sendWa:"Dërgo në WhatsApp",copy:"Kopjo tekstin",copied:"U kopjua ✓",
+  manual:"Nëse WhatsApp nuk hapet, kopjoni tekstin dhe dërgojeni në +82 10-5189-9201.",
+  any:"Çfarëdo",
+  types:["Sedan","SUV","Furgon / Minivan","Pikap","Autobus","Kamion","Tjetër"],
+  fuels:["Çfarëdo","Benzinë","Naftë","Gaz (LPG)","Hibrid","Elektrik"],
+  gears:["Çfarëdo","Automatik","Manual"],
+  ships:["Nuk jam i sigurt – më këshilloni","RoRo (makina hyn në anije me rrota)","Kontejner (makina brenda një kutie të mbyllur)"],shipHint:"RoRo: makina futet duke u drejtuar në një anije të madhe transportuese makinash. Zakonisht më lirë, e mirë për 1 makinë, SUV, autobusë dhe kamionë. • Kontejner: makina mbyllet brenda një kontejneri çeliku. Më e sigurt, mban 2–4 makina bashkë.",
+  whens:["Sa më shpejt","Brenda 1 muaji","1–3 muaj","Vetëm po shoh çmimet"],
+  buyer:"Ju jeni",buyers:["— Zgjidhni —","Tregtar makinash / kompani","Për përdorim personal","Po filloj biznes me makina"],acc:"Historiku i aksidenteve i pranuar",accs:["— Zgjidhni —","Pa asnjë aksident","Vetëm gërvishtje / rilyerje","Panele të jashtme të ndërruara OK (dyer, parafango, kofano, bagazh) – pa dëmtim shasie","Riparim i vogël shasie OK nëse çmimi është i mirë","Çdo gjendje – çmimi më i mirë","Tjetër – shkruani çfarë është OK / jo OK për ju"],accOtherPh:"p.sh. parakolp i ndërruar OK, por pa airbag të hapur ose dëmtim shasie",total:"Buxheti total (USD)",totalPh:"p.sh. 50.000 për të gjitha automjetet"}
+};
+const KMS=[0,10000,20000,30000,50000,70000,100000,130000,150000,200000,250000,300000];
+const f=document.getElementById('f');
+let lang="ar";
+function opts(sel,arr){const v=sel.selectedIndex;sel.innerHTML=arr.map((x,i)=>`<option value="${i}">${x}</option>`).join('');sel.selectedIndex=v<0?0:v;}
+function setLang(l){
+  lang=l;const t=L[l];
+  document.documentElement.lang=l;document.documentElement.dir=t.dir;
+  document.querySelectorAll('[data-t]').forEach(e=>{if(t[e.dataset.t]!==undefined)e.textContent=t[e.dataset.t]});
+  document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t[e.dataset.ph]);
+  document.querySelectorAll('.langs button').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
+  const checked=[...document.querySelectorAll('#types input:checked')].map(i=>i.value);
+  document.getElementById('types').innerHTML=t.types.map((x,i)=>`<label><input type="checkbox" value="${i}" ${checked.includes(String(i))?'checked':''}> ${x}</label>`).join('');
+  document.querySelectorAll('.kms').forEach(s=>{const v=s.value;let o=`<option value="">${t.any}</option>`;KMS.forEach(n=>o+=`<option value="${n}">${n.toLocaleString('en-US')} km</option>`);s.innerHTML=o;s.value=v;});opts(document.getElementById('fuel'),t.fuels);
+  opts(document.getElementById('gear'),t.gears);opts(document.getElementById('ship'),t.ships);opts(document.getElementById('when'),t.whens);opts(document.getElementById('buyer'),t.buyers);opts(document.getElementById('acc'),t.accs);
+  document.querySelectorAll('.years').forEach(s=>{const v=s.value;let h=`<option value="">${t.any}</option>`;for(let y=new Date().getFullYear();y>=2005;y--)h+=`<option>${y}</option>`;s.innerHTML=h;s.value=v;});
+  if(document.getElementById('result').style.display==='block')build();
+  try{localStorage.setItem('am_lang',l)}catch(e){}
+}
+document.querySelectorAll('.langs button').forEach(b=>b.onclick=()=>setLang(b.dataset.lang));
+function build(){
+  const t=L[L[lang].msgLang||lang],k=t.k,d=new FormData(f),g=n=>(d.get(n)||'').toString().trim();
+  const types=[...document.querySelectorAll('#types input:checked')].map(i=>t.types[i.value]).join(', ');
+  const yf=g('yearFrom'),yt=g('yearTo');
+  const year=yf&&yt?`${yf} – ${yt}`:yf?`${yf}+`:yt?`≤ ${yt}`:t.any;
+  const rows=[[k.name,g('name')],[k.company,g('company')],[k.country,g('country')],[k.phone,g('phone')],[k.buyer,g('buyer')>0?t.buyers[g('buyer')]:''],null,
+   [k.type,types],[k.model,g('model')],[k.year,year],[k.km,(()=>{const a=g('kmFrom'),b=g('kmTo'),F=n=>Number(n).toLocaleString('en-US')+' km';return a&&b?F(a)+' – '+F(b):a?F(a)+' +':b?'≤ '+F(b):''})()],[k.qty,g('qty')],[k.fuel,t.fuels[g('fuel')]],[k.gear,t.gears[g('gear')]],[k.color,g('color')],[k.options,g('options')],[k.acc,g('acc')==='6'?(g('accOther')||t.accs[6]):g('acc')>0?t.accs[g('acc')]:''],null,
+   [k.budget,g('budget')],[k.total,g('total')],[k.port,g('port')],[k.ship,t.ships[g('ship')]],[k.when,t.whens[g('when')]],[k.notes,g('notes')]];
+  const txt="🚗 "+t.msgHead+"\n\n"+rows.filter(r=>r===null||r[1]).map(r=>r===null?"":`• ${r[0]}: ${r[1]}`).join("\n").replace(/\n{3,}/g,"\n\n").trim();
+  document.getElementById('msg').textContent=txt;
+  document.getElementById('wa').href=`https://wa.me/${PHONE}?text=${encodeURIComponent(txt)}`;
+  return txt;
+}
+f.addEventListener('submit',e=>{
+  e.preventDefault();
+  const ok=[...f.elements].some(el=>(el.type==='checkbox'&&el.checked)||((el.tagName==='INPUT'&&el.type!=='checkbox'&&el.name!=='qty')||el.tagName==='TEXTAREA')&&el.value.trim()||(el.tagName==='SELECT'&&el.value&&el.value!=='0'));
+  document.getElementById('err').style.display=ok?'none':'block';
+  if(!ok)return;
+  build();const r=document.getElementById('result');r.style.display='block';r.scrollIntoView({behavior:'smooth'});
+});
+document.getElementById('cp').onclick=async()=>{const b=document.getElementById('cp');try{await navigator.clipboard.writeText(document.getElementById('msg').textContent);b.textContent=L[lang].copied;setTimeout(()=>b.textContent=L[lang].copy,2000)}catch(e){const s=getSelection(),rg=document.createRange();rg.selectNodeContents(document.getElementById('msg'));s.removeAllRanges();s.addRange(rg);}};
+const accSel=document.getElementById('acc'),accO=document.getElementById('accOther');
+function accToggle(){accO.style.display=accSel.value==='6'?'block':'none'}
+accSel.addEventListener('change',accToggle);
+let start="ar";try{start=localStorage.getItem('am_lang')||"ar"}catch(e){}
+setLang(start);accToggle();
+</script>
+</body>
+</html>
