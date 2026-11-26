@@ -56,6 +56,8 @@ button.fin{width:100%;margin-top:10px;background:#16a34a;border-color:#16a34a;co
 .pv{display:grid;gap:16px;justify-items:center;align-content:start;position:relative}
 @media(min-width:981px){.pv{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:4px 8px 40px;scroll-behavior:smooth}}
 .pw.edit{outline:3px solid #16a34a;outline-offset:3px}
+.pv.solo .pw:not(.cur){display:none}
+.exporting .pv.solo .pw:not(.cur){display:block}
 .pw{position:relative;box-shadow:0 6px 24px rgba(0,0,0,.18);border-radius:2px;overflow:hidden}
 .pw>.page{transform-origin:0 0;position:absolute;left:0;top:0}
 .exporting .pw{width:794px!important;height:1123px!important}
@@ -284,7 +286,7 @@ function buildPages(){
   pv.querySelectorAll('[data-page]').forEach(a=>{a.style.cursor='pointer'});
   scale();keepPage();
 }
-function keepPage(){const ws=$('pv').querySelectorAll('.pw');ws.forEach((w,k)=>w.classList.toggle('edit',k===focusPage&&focusPage>0))}
+function keepPage(){applySolo()}
 function scale(){const pv=$('pv');const W=Math.min(pv.clientWidth,794);const s=W/794;pv.querySelectorAll('.pw').forEach(w=>{w.style.width=794*s+'px';w.style.height=1123*s+'px';w.firstElementChild.style.transform=`scale(${s})`})}
 const ro=new ResizeObserver(()=>scale());ro.observe($('pv'));
 $('pv').addEventListener('click',e=>{const a=e.target.closest('[data-page]');if(!a)return;const ws=$('pv').querySelectorAll('.pw');const t=ws[+a.dataset.page];if(t)t.scrollIntoView({behavior:'smooth',block:'start'})});
@@ -301,7 +303,8 @@ let editing=null;
 const LEG=[['X','교환','#e53935'],['W','판금/용접','#5b8fd6'],['C','부식','#f0a030'],['A','흠집','#6d7b96'],['U','요철','#6b6b55'],['T','손상','#9c7b6b']];
 let target=null;let coverN=1,focusPage=0;
 const wide=()=>matchMedia('(min-width:981px)').matches;
-function showPage(i){focusPage=i;const pv=$('pv');const ws=pv.querySelectorAll('.pw');ws.forEach((w,k)=>w.classList.toggle('edit',k===i&&i>0));const w=ws[i];if(!w||!wide())return;pv.scrollTo({top:Math.max(0,w.offsetTop-8)})}
+function showPage(i){focusPage=i;applySolo();const pv=$('pv');if(wide())pv.scrollTop=0;else if(editing){const w=pv.querySelector('.pw.cur');if(w&&false)w.scrollIntoView()}}
+function applySolo(){const pv=$('pv');const ws=pv.querySelectorAll('.pw');const on=!!editing;pv.classList.toggle('solo',on);const i=editing?edPage():0;ws.forEach((w,k)=>{w.classList.toggle('cur',k===i);w.classList.toggle('edit',on&&k===i)})}
 function pageForEl(el){const d=el.closest('details.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi]&&S.groups[gi].cars[ci];const x=allCars().find(x=>x.c===c);return x?coverN+x.n-1:0}return 0}
 const HIST=[];let typing=null;
 function snap(){const j=JSON.stringify(S);if(HIST[HIST.length-1]!==j){HIST.push(j);if(HIST.length>40)HIST.shift()}const b=document.getElementById('bUndo');if(b)b.disabled=!HIST.length}
