@@ -154,6 +154,7 @@ details.car[open] summary{margin-bottom:8px}
   <div class="ed">
     <div class="top"><h1>AutoMatch offer maker</h1><p>Fill in the cars and download the PDF. It comes out like your Bulgaria offer: a cover with all cars, one page per car, and a special-request page. Every button in the PDF opens WhatsApp.</p></div>
     <div class="bar">
+      <button id="bUndo" class="g" disabled>↶ Undo</button>
       <button id="bPdf">Download PDF</button>
       <button id="bSave" class="g">Save draft</button>
       <button id="bOpen" class="g">Open draft</button>
@@ -289,7 +290,10 @@ function get(p){return p.split('.').reduce((o,k)=>o==null?o:o[k],S)}
 function set(p,v){const ks=p.split('.');const last=ks.pop();const o=ks.reduce((o,k)=>o[k],S);o[last]=v}
 let open=new Set();
 const LEG=[['X','교환','#e53935'],['W','판금/용접','#5b8fd6'],['C','부식','#f0a030'],['A','흠집','#6d7b96'],['U','요철','#6b6b55'],['T','손상','#9c7b6b']];
-let target=null; // {c:path,k:'ph'|'dg'}
+let target=null;
+const HIST=[];let typing=null;
+function snap(){const j=JSON.stringify(S);if(HIST[HIST.length-1]!==j){HIST.push(j);if(HIST.length>40)HIST.shift()}const b=document.getElementById('bUndo');if(b)b.disabled=!HIST.length}
+function undo(){if(!HIST.length){msg('Nothing to undo.');return}let j=HIST.pop();if(j===JSON.stringify(S)&&HIST.length)j=HIST.pop();S=JSON.parse(j);typing=null;target=firstEmpty();renderEditor();buildPages();persist();$('bUndo').disabled=!HIST.length;msg('Undone.')} // {c:path,k:'ph'|'dg'}
 const YEARS=['',...Array.from({length:18},(_,i)=>String(new Date().getFullYear()+1-i))];
 const ENGINES=['','Petrol 1.0 L','Petrol 1.2 L','Petrol 1.4 L','Petrol 1.5 L','Petrol 1.6 L','Petrol 1.6 L Turbo','Petrol 2.0 L','Petrol 2.0 L Turbo','Petrol 2.4 L','Petrol 2.5 L','Petrol 2.5 L Turbo','Petrol 3.0 L','Petrol 3.3 L','Petrol 3.5 L','Diesel 1.6 L','Diesel 2.0 L','Diesel 2.2 L','Diesel 2.5 L','Diesel 3.0 L','Hybrid 1.6 L','Hybrid 2.0 L','Hybrid 2.5 L','LPG 2.0 L','LPG 3.0 L','LPG 3.5 L','Electric'];
 const drop=(C,k,t,img)=>{const on=target&&target.c===C&&target.k===k;return `<div class="drop w${on?' on':''}" data-drop="${k}" data-c="${C}" tabindex="0"><span class="tn"${img?` style="background-image:url('${esc(img)}')"`:''}>${img?'':'+'}</span><span>${t}<small class="on-t">Ready — press Ctrl+V</small><small class="off-t">${img?'Click here, then Ctrl+V to replace':'Click here, then Ctrl+V'}</small><small><label class="lnk">Choose file<input type="file" accept="image/*" data-${k}="${C}"></label>${img?`<span class="lnk" data-a="iclr" data-c="${C}" data-k="${k}">Remove</span>`:''}</small></span></div>`};
@@ -316,7 +320,7 @@ function renderEditor(){
 }
 let tm;
 const refresh=()=>{clearTimeout(tm);tm=setTimeout(()=>{buildPages();persist()},180)};
-$('editor').addEventListener('input',e=>{const p=e.target.dataset.p;if(!p)return;set(p,e.target.type==='checkbox'?e.target.checked:e.target.value);refresh();const d=e.target.closest('details.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi].cars[ci];const n=allCars().find(x=>x.c===c).n;d.querySelector('summary').textContent=`${n}. ${label(c)||'New car'} — ${price(c)}`}});
+$('editor').addEventListener('input',e=>{const p=e.target.dataset.p;if(!p)return;if(!typing)snap();clearTimeout(typing);typing=setTimeout(()=>{typing=null},1200);set(p,e.target.type==='checkbox'?e.target.checked:e.target.value);refresh();const d=e.target.closest('details.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi].cars[ci];const n=allCars().find(x=>x.c===c).n;d.querySelector('summary').textContent=`${n}. ${label(c)||'New car'} — ${price(c)}`}});
 $('editor').addEventListener('change',async e=>{
   const t=e.target;
   if(t.dataset.ph&&t.files[0])putImage({c:t.dataset.ph,k:'ph'},t.files[0]);
@@ -327,7 +331,7 @@ function allSlots(){const out=[];S.groups.forEach((g,gi)=>g.cars.forEach((c,ci)=
 function firstEmpty(){return allSlots().find(t=>{const c=get(t.c);return t.k==='ph'?!c.photos[0]:!c.diagImg})||null}
 function openFor(t){if(!t)return;const m=t.c.split('.');open.add(m[1]+'-'+m[3])}
 function setTarget(t){target=t;document.querySelectorAll('.drop').forEach(d=>d.classList.toggle('on',!!t&&d.dataset.c===t.c&&d.dataset.drop===t.k))}
-async function putImage(t,file){const c=get(t.c);if(!c)return;msg('Adding image…');
+async function putImage(t,file){const c=get(t.c);if(!c)return;snap();msg('Adding image…');
   if(t.k==='ph'){c.photos=[await shrink(file,1220)]}else{c.diagImg=await shrink(file,1400,true)}
   const sl=allSlots();const i=sl.findIndex(x=>x.c===t.c&&x.k===t.k);target=sl[i+1]||t;openFor(target);
   msg(t.k==='ph'?'Car photo added. Next paste → inspection report.':'Inspection report added.');renderEditor();buildPages();persist();
@@ -340,7 +344,7 @@ $('editor').addEventListener('dragleave',e=>{const d=e.target.closest('.drop');i
 $('editor').addEventListener('drop',async e=>{const d=e.target.closest('.drop');if(!d)return;e.preventDefault();const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(!f)return;putImage({c:d.dataset.c,k:d.dataset.drop},f)});
 $('editor').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.car')){d.open?open.add(d.dataset.k):open.delete(d.dataset.k)}},true);
 $('editor').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;e.preventDefault();
-  const a=b.dataset.a,gi=+b.dataset.g,ci=+b.dataset.c,G=S.groups[gi];
+  const a=b.dataset.a,gi=+b.dataset.g,ci=+b.dataset.c;if((a==='cdel'||a==='gdel')&&!b.dataset.sure){}else snap();const G=S.groups[gi];
   if(a==='cadd'){const prev=G.cars[G.cars.length-1];const nc=newCar();if(prev){['fuel','gear','body','drive','seats','specs','steer','year'].forEach(k=>nc[k]=prev[k])}G.cars.push(nc);open.add(gi+'-'+(G.cars.length-1));target={c:'groups.'+gi+'.cars.'+(G.cars.length-1),k:'ph'}}
   if(a==='cdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}G.cars.splice(ci,1);open.clear()}
   if(a==='cdup'){G.cars.splice(ci+1,0,JSON.parse(JSON.stringify(G.cars[ci])));open.clear();open.add(gi+'-'+(ci+1))}
@@ -362,10 +366,12 @@ dl=local;
 async function give(name,data){try{await dl.save({filename:name,data});msg('Saved '+name);return true}catch(e){msg(e&&e.code==='declined'?'Download cancelled.':'Download did not work ('+(e&&e.code||'error')+').');return false}}
 const fname=ext=>('AutoMatch_Offer_'+(S.offer.country||'')+'_'+(S.offer.date||'')).replace(/[^\w\-]+/g,'_').replace(/_+/g,'_').replace(/_$/,'')+'.'+ext;
 $('bSave').addEventListener('click',()=>{if(dl)give(fname('json'),JSON.stringify(S))});
+$('bUndo').addEventListener('click',undo);
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){const t=document.activeElement;if(t&&(t.tagName==='INPUT'&&!['checkbox','file'].includes(t.type)||t.tagName==='TEXTAREA'))return;e.preventDefault();undo()}});
 $('bOpen').addEventListener('click',()=>$('fOpen').click());
-$('fOpen').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.groups||!d.offer)throw 0;S=d;open.clear();renderEditor();buildPages();persist();msg('Draft opened.')}catch(x){msg('That file is not an offer draft.')}e.target.value=''});
+$('fOpen').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.groups||!d.offer)throw 0;snap();S=d;open.clear();renderEditor();buildPages();persist();msg('Draft opened.')}catch(x){msg('That file is not an offer draft.')}e.target.value=''});
 $('bNew').addEventListener('click',e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to clear all cars';setTimeout(()=>{delete b.dataset.sure;b.textContent='New offer'},4000);return}
-  delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};open=new Set(['0-0']);target={c:'groups.0.cars.0',k:'ph'};renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
+  snap();delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};open=new Set(['0-0']);target={c:'groups.0.cars.0',k:'ph'};renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
 
 $('bPdf').addEventListener('click',async()=>{
   if(!dl)return;if(!window.html2canvas||!window.jspdf){msg('PDF tools did not load. Reload the page.');return}
