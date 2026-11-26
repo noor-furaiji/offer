@@ -233,19 +233,19 @@ function cardHTML(x,detailIdx){
   <div class="cb"><a data-page="${detailIdx}"><b>${esc(c.name||'Car name')}</b><p>${esc([c.year,num(c.km)&&num(c.km)+' km',c.fuel].filter(Boolean).join(' · '))}</p><p>${esc([c.body,c.drive,c.gear].filter(Boolean).join(' · '))}</p></a>
   <div class="pr"><strong>${esc(price(c))}</strong><a class="sel" href="${esc(wa(selMsg(x)))}" target="_blank" rel="noopener">Select ✓</a></div></div></div>`;
 }
-const selMsg=x=>`Hello ${S.offer.sales}, I select car #${x.n}: ${label(x.c)} — ${price(x.c)} (${S.offer.terms}). Offer: ${S.offer.title}${S.offer.country?', '+S.offer.country:''}.`;
+const selMsg=x=>`Hello ${S.offer.sales}, I select car #${x.n}: ${label(x.c)} — ${price(x.c)} (${termsT()}). Offer: ${S.offer.title}${S.offer.country?', '+S.offer.country:''}.`;
 const chgMsg=(x,w)=>`Hello ${S.offer.sales}, about car #${x.n} ${label(x.c)} (${price(x.c)}): I like it but ${w}`;
 function groupHTML(g,gi,cars,firstDetail){
   return `<div class="grpb"><div class="gh2"><span class="num">${gi+1}</span><div><b>${esc(g.name)}</b><span>${esc(g.sel)}</span></div></div><div class="cards">${cars.map(x=>cardHTML(x,firstDetail+x.n-1)).join('')}</div></div>`;
 }
-function coverHead(){const o=S.offer;return `<div class="ch">${o.logo?`<img class="lg" src="${LOGO_STACK}" alt="AutoMatch">`:''}<div style="flex:1"><small>Price Offer</small><h1>${esc(o.title)}</h1><div class="m3"><div><span>Country</span>${esc(o.country)}</div><div><span>Date</span>${esc(fDate(o.date))}</div><div><span>Prices</span>${esc(o.terms)}</div></div></div></div>`}
+function coverHead(){const o=S.offer;return `<div class="ch">${o.logo?`<img class="lg" src="${LOGO_STACK}" alt="AutoMatch">`:''}<div style="flex:1"><small>Price Offer</small><h1>${esc(o.title)}</h1><div class="m3"><div><span>Country</span>${esc(o.country)}</div><div><span>Date</span>${esc(fDate(o.date))}</div><div><span>Prices</span>${esc(termsT())}</div></div></div></div>`}
 function detailHTML(x){
   const c=x.c,o=S.offer,cnt=x.g.cars.length,i=x.ci+1;
   const ph=c.photos.slice(0,1);
   
   return `<div class="page">${dhead(`${x.g.name} · ${i} of ${cnt}`)}<div class="pb c2">
   <div class="dt"><div><span class="chip">${esc([x.g.name,'Car '+i+' of '+cnt,c.tag].filter(Boolean).join(' · '))}</span><h2>${esc(c.name||'Car name')}</h2><p>${esc(['Model '+(c.year||''),c.seats&&c.seats+' seats',c.body,c.drive,c.fuel].filter(Boolean).join(' · '))}</p></div>
-  <div class="pbx"><span>${esc(o.priceLabel)}</span><b>${esc(price(c))}</b></div></div>
+  <div class="pbx"><span>${esc(priceL())}</span><b>${esc(price(c))}</b></div></div>
   <div class="st"><div><span>Model year</span>${esc(c.year||'—')}</div><div><span>Mileage</span>${esc(num(c.km)?num(c.km)+' km':'—')}</div><div><span>Seats</span>${esc(c.seats?c.seats+' seats':'—')}</div><div><span>Gearbox</span>${esc(c.gear||'—')}</div></div>
   <div class="pg one"><div${bgi(ph[0])}></div></div>
   <div class="lo"><div><h3>Specifications</h3><table class="sp"><tbody>${[['Engine',c.engine],['First registration',fReg(c.reg)],['Body / drive',[c.body,c.drive].filter(Boolean).join(' · ')],['Color',c.color],['Steering',c.steer],['Specs',c.specs]].filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table></div>
@@ -293,13 +293,17 @@ $('pv').addEventListener('click',e=>{const a=e.target.closest('[data-page]');if(
 
 /* ---- editor ---- */
 const F=(path,lab,opt={})=>{const v=get(path);const cls=opt.w?' class="w"':'';
-  if(opt.sel){const L=opt.sel.includes(v??'')?opt.sel:[...opt.sel,v];return `<label${cls}>${lab}<select data-p="${path}">${L.map(o=>`<option${o===v?' selected':''} value="${esc(o)}">${esc(o)||'—'}</option>`).join('')}</select></label>`}
+  if(opt.sel){const L=opt.sel.includes(v??'')?opt.sel:[...opt.sel,v];return `<label${cls}>${lab}<select data-p="${path}">${L.map(o=>`<option${o===v?' selected':''} value="${esc(o)}">${esc((opt.lab&&opt.lab[o])||o)||'—'}</option>`).join('')}</select></label>`}
   if(opt.ta)return `<label${cls}>${lab}<textarea data-p="${path}">${esc(v)}</textarea></label>`;
   if(opt.ck)return `<label class="ck${opt.w?' w':''}"><input type="checkbox" data-p="${path}"${v?' checked':''}>${lab}</label>`;
   return `<label${cls}>${lab}<input data-p="${path}" type="${opt.t||'text'}" value="${esc(v)}"${opt.ph?` placeholder="${esc(opt.ph)}"`:''}${opt.im?` inputmode="${opt.im}"`:''}></label>`};
 function get(p){return p.split('.').reduce((o,k)=>o==null?o:o[k],S)}
 function set(p,v){const ks=p.split('.');const last=ks.pop();const o=ks.reduce((o,k)=>o[k],S);o[last]=v}
 let editing=null;
+const CODE={'€':'EUR','$':'USD','₩':'KRW','AED ':'AED'};
+const incT=()=>S.offer.inc||((S.offer.terms||'FOB').split(/[ ·]/)[0])||'FOB';
+const termsT=()=>incT()+' · '+(CODE[S.offer.cur]||String(S.offer.cur).trim());
+const priceL=()=>incT()+' price';
 const LEG=[['X','교환','#e53935'],['W','판금/용접','#5b8fd6'],['C','부식','#f0a030'],['A','흠집','#6d7b96'],['U','요철','#6b6b55'],['T','손상','#9c7b6b']];
 let target=null;let coverN=1,focusPage=0;
 const wide=()=>matchMedia('(min-width:981px)').matches;
@@ -316,7 +320,7 @@ function renderEditor(){
   const o='offer';let n=0;const E=editing;
   const edBtn=(id)=>E===id?`<button class="ok2 s" data-a="fin">✓ Finish</button>`:`<button class="g s" data-a="edit" data-id="${id}">Edit</button>`;
   let h=`<div class="box${E==='offer'?' ed':''}"><div class="hd"><h2>Offer</h2>${edBtn('offer')}</div>`;
-  if(E==='offer')h+=`<div class="f" style="margin-top:10px">${F(o+'.title','Title',{w:1})}${F(o+'.country','Country')}${F(o+'.date','Date',{t:'date'})}${F(o+'.terms','Prices (cover)',{ph:'FOB · EUR'})}${F(o+'.cur','Currency sign',{sel:['€','$','₩','AED ','USD ','EUR ']})}${F(o+'.priceLabel','Price label (car page)')}${F(o+'.sales','Sales contact')}${F(o+'.intro','Intro text',{ta:1,w:1})}${F(o+'.phone','WhatsApp number')}${F(o+'.site','Website')}${F(o+'.logo','Show AutoMatch logo',{ck:1,w:1})}${F(o+'.request','Add “Didn’t find what you need?” page',{ck:1,w:1})}</div><button class="fin" data-a="fin">✓ Finish</button>`;
+  if(E==='offer')h+=`<div class="f" style="margin-top:10px">${F(o+'.title','Title',{w:1})}${F(o+'.country','Country')}${F(o+'.date','Date',{t:'date'})}${F(o+'.cur','Currency',{sel:['€','$','₩','AED '],lab:{'€':'EUR €','$':'USD $','₩':'KRW ₩','AED ':'AED'}})}${F(o+'.inc','Price terms',{sel:['FOB','CIF','CFR','EXW']})}${F(o+'.sales','Sales contact')}${F(o+'.intro','Intro text',{ta:1,w:1})}${F(o+'.phone','WhatsApp number')}${F(o+'.site','Website')}${F(o+'.logo','Show AutoMatch logo',{ck:1,w:1})}${F(o+'.request','Add “Didn’t find what you need?” page',{ck:1,w:1})}</div><button class="fin" data-a="fin">✓ Finish</button>`;
   else h+=`<p class="sum">${esc([S.offer.title,S.offer.country,fDate(S.offer.date)].filter(Boolean).join(' · ')||'No title yet')}</p>`;
   h+=`</div><div class="box"><h2>Groups &amp; cars</h2><div class="tip"><b>Fast way:</b> click <b>Edit</b> on a car → take a screenshot (Win+Shift+S) → press <b>Ctrl+V</b>. 1st paste = car photo, 2nd = inspection report. Press <b>Finish</b> when done.</div>`;
   S.groups.forEach((g,gi)=>{const P='groups.'+gi,gid='g:'+gi;
