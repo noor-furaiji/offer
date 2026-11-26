@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AutoMatch Offer Maker</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@500;700&display=swap">
 <style>
 /* VOICE: the existing AutoMatch price-offer PDF, rebuilt as a form
    IDEA: the A4 offer pages themselves, live beside the inputs
@@ -107,7 +107,12 @@ details.car[open] summary{margin-bottom:8px}
 .sp td{padding:6.5px 2px;border-bottom:1px dashed #dde2ea}
 .sp td:last-child{text-align:right;font-weight:800}
 .ins{background:#f2faf4;border:1px solid #d3ebd9;border-radius:8px;padding:10px 11px;font-size:10px;color:#6b7686}
-.ins h3{margin-bottom:4px}
+.ins h3{margin-bottom:6px}
+.shot{height:232px;background:#fff center/contain no-repeat;border-radius:6px;border:1px solid #e3e9e5}
+.shot.no{display:grid;place-items:center;color:#9aa5b4;font-size:11px}
+.lg2{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;margin-top:8px;font-family:'Noto Sans KR',Figtree,sans-serif;font-size:11px;font-weight:700;color:#222}
+.lg2 span{display:flex;align-items:center;gap:4px}
+.lg2 i{width:15px;height:15px;border-radius:50%;color:#fff;font-style:normal;font-family:Figtree,sans-serif;font-size:9px;font-weight:800;display:grid;place-items:center}
 .dg{background:#fff;border-radius:6px;padding:6px;margin:6px 0}
 .dg .lb{display:grid;grid-template-columns:1fr 1fr;text-align:center;font-weight:800;color:#0b2a63;font-size:9.5px}
 .dg .im{height:82px;background:center/contain no-repeat}
@@ -117,7 +122,11 @@ details.car[open] summary{margin-bottom:8px}
 .drop .tn{width:72px;height:54px;border-radius:6px;background:var(--line) center/cover no-repeat;display:grid;place-items:center;font-size:22px;color:var(--muted)}
 .drop small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .drop input{display:none}
-.drop.over{border-color:#3b82f6}
+.drop.over,.drop.on{border-color:#16a34a;border-style:solid;background:light-dark(#effaf2,#13261a)}
+.drop .lnk{font-size:12px;font-weight:600;color:var(--acc);text-decoration:underline;cursor:pointer;margin-right:10px}
+.drop .on-t{display:none;color:#16a34a;font-weight:800}.drop.on .on-t{display:block}.drop.on .off-t{display:none}
+.tip{background:light-dark(#effaf2,#13261a);border:1px solid #16a34a;border-radius:10px;padding:10px 12px;font-size:14px}
+.tip b{color:#16a34a}
 .ok{color:#15803d;font-weight:800;font-size:11px;margin:5px 0 2px;display:flex;align-items:center;gap:5px}
 .ok i{width:14px;height:14px;border-radius:3px;background:#22c55e;color:#fff;font-style:normal;font-size:10px;display:grid;place-items:center}
 .bad{color:#b45309;font-weight:800;font-size:11px;margin:5px 0 2px;white-space:pre-wrap}
@@ -222,17 +231,15 @@ function coverHead(){const o=S.offer;return `<div class="ch">${o.logo?`<img clas
 function detailHTML(x){
   const c=x.c,o=S.offer,cnt=x.g.cars.length,i=x.ci+1;
   const ph=c.photos.slice(0,1);
-  const insOK=c.clean?`<div class="ok"><i>✓</i>No replaced or welded parts — frame intact</div>`:'';
+  
   return `<div class="page">${dhead(`${x.g.name} · ${i} of ${cnt}`)}<div class="pb c2">
   <div class="dt"><div><span class="chip">${esc([x.g.name,'Car '+i+' of '+cnt,c.tag].filter(Boolean).join(' · '))}</span><h2>${esc(c.name||'Car name')}</h2><p>${esc(['Model '+(c.year||''),c.seats&&c.seats+' seats',c.body,c.drive,c.fuel].filter(Boolean).join(' · '))}</p></div>
   <div class="pbx"><span>${esc(o.priceLabel)}</span><b>${esc(price(c))}</b></div></div>
   <div class="st"><div><span>Model year</span>${esc(c.year||'—')}</div><div><span>Mileage</span>${esc(num(c.km)?num(c.km)+' km':'—')}</div><div><span>Seats</span>${esc(c.seats?c.seats+' seats':'—')}</div><div><span>Gearbox</span>${esc(c.gear||'—')}</div></div>
   <div class="pg one"><div${bgi(ph[0])}></div></div>
   <div class="lo"><div><h3>Specifications</h3><table class="sp"><tbody>${[['Engine',c.engine],['First registration',fReg(c.reg)],['Body / drive',[c.body,c.drive].filter(Boolean).join(' · ')],['Color',c.color],['Steering',c.steer],['Specs',c.specs]].filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table></div>
-  <div class="ins"><h3>Vehicle condition — inspection report</h3>${c.insDate?`Inspection date: ${esc(fIns(c.insDate))}`:''}
-  ${c.diagImg?`<div class="dg"><div class="im rep" style="background-image:url('${esc(c.diagImg)}')"></div></div>`:c.diagram?`<div class="dg"><div class="lb"><span>Outer panels</span><span>Main frame (chassis)</span></div><div class="im" style="background-image:url('${esc(DIAGRAM)}')"></div></div>`:''}
-  ${insOK}${c.note?`<div class="bad">${esc(c.note)}</div>`:''}${c.encar?`<p class="ec">✓ Also confirmed by Encar diagnosis</p>`:''}
-  <div>✕ = replaced part · W = panel/welding repair${c.diagram?' * Shown on the standard Korean inspection diagram':''}</div></div></div>
+  <div class="ins"><h3>Vehicle condition — inspection report</h3>${c.diagImg?`<div class="shot" style="background-image:url('${esc(c.diagImg)}')"></div>`:`<div class="shot no">Inspection report</div>`}
+  <div class="lg2">${LEG.map(([l,t,col])=>`<span><i style="background:${col}">${l}</i>${t}</span>`).join('')}</div></div></div>
   <div class="bt">${safeUrl(c.url)?`<a class="bo" href="${esc(c.url)}" target="_blank" rel="noopener">View all photos</a>`:`<a class="bo" href="${esc(wa(`Hello ${o.sales}, please send me all photos of car #${x.n} ${label(c)}.`))}" target="_blank" rel="noopener">View all photos</a>`}<a class="bg" href="${esc(wa(selMsg(x)))}" target="_blank" rel="noopener">✓ Tap here to select this vehicle</a></div>
   <div class="chg"><b>Like it but want a change?</b>${[['Lower price','I would like a lower price.'],['Lower mileage','I would like one with lower mileage.'],['Other color','I would like another color: '],['Other note','my note: ']].map(([t,m])=>`<a href="${esc(wa(chgMsg(x,m)))}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>
   </div>${foot()}</div>`;
@@ -281,13 +288,15 @@ const F=(path,lab,opt={})=>{const v=get(path);const cls=opt.w?' class="w"':'';
 function get(p){return p.split('.').reduce((o,k)=>o==null?o:o[k],S)}
 function set(p,v){const ks=p.split('.');const last=ks.pop();const o=ks.reduce((o,k)=>o[k],S);o[last]=v}
 let open=new Set();
+const LEG=[['X','교환','#e53935'],['W','판금/용접','#5b8fd6'],['C','부식','#f0a030'],['A','흠집','#6d7b96'],['U','요철','#6b6b55'],['T','손상','#9c7b6b']];
+let target=null; // {c:path,k:'ph'|'dg'}
 const YEARS=['',...Array.from({length:18},(_,i)=>String(new Date().getFullYear()+1-i))];
 const ENGINES=['','Petrol 1.0 L','Petrol 1.2 L','Petrol 1.4 L','Petrol 1.5 L','Petrol 1.6 L','Petrol 1.6 L Turbo','Petrol 2.0 L','Petrol 2.0 L Turbo','Petrol 2.4 L','Petrol 2.5 L','Petrol 2.5 L Turbo','Petrol 3.0 L','Petrol 3.3 L','Petrol 3.5 L','Diesel 1.6 L','Diesel 2.0 L','Diesel 2.2 L','Diesel 2.5 L','Diesel 3.0 L','Hybrid 1.6 L','Hybrid 2.0 L','Hybrid 2.5 L','LPG 2.0 L','LPG 3.0 L','LPG 3.5 L','Electric'];
-const drop=(C,k,t,img)=>`<label class="drop" data-drop="${k}" data-c="${C}"><span class="tn"${img?` style="background-image:url('${esc(img)}')"`:''}>${img?'':'+'}</span><span>${t}<small>${img?'Tap or drop to replace':'Tap or drop image here'}</small></span><input type="file" accept="image/*" data-${k}="${C}"></label>`;
+const drop=(C,k,t,img)=>{const on=target&&target.c===C&&target.k===k;return `<div class="drop w${on?' on':''}" data-drop="${k}" data-c="${C}" tabindex="0"><span class="tn"${img?` style="background-image:url('${esc(img)}')"`:''}>${img?'':'+'}</span><span>${t}<small class="on-t">Ready — press Ctrl+V</small><small class="off-t">${img?'Click here, then Ctrl+V to replace':'Click here, then Ctrl+V'}</small><small><label class="lnk">Choose file<input type="file" accept="image/*" data-${k}="${C}"></label>${img?`<span class="lnk" data-a="iclr" data-c="${C}" data-k="${k}">Remove</span>`:''}</small></span></div>`};
 function renderEditor(){
   const o='offer';let n=0;
   let h=`<div class="box"><h2>Offer</h2><div class="f">${F(o+'.title','Title',{w:1})}${F(o+'.country','Country')}${F(o+'.date','Date',{t:'date'})}${F(o+'.terms','Prices (cover)',{ph:'FOB · EUR'})}${F(o+'.cur','Currency sign',{sel:['€','$','₩','AED ','USD ','EUR ']})}${F(o+'.priceLabel','Price label (car page)')}${F(o+'.sales','Sales contact')}${F(o+'.intro','Intro text',{ta:1,w:1})}${F(o+'.phone','WhatsApp number')}${F(o+'.site','Website')}${F(o+'.logo','Show AutoMatch logo',{ck:1,w:1})}${F(o+'.request','Add “Didn’t find what you need?” page',{ck:1,w:1})}</div></div>`;
-  h+=`<div class="box"><h2>Groups &amp; cars</h2>`;
+  h+=`<div class="box"><h2>Groups &amp; cars</h2><div class="tip"><b>Fast way:</b> take a screenshot (Win+Shift+S) → press <b>Ctrl+V</b> on this page. The 1st paste goes to the car photo, the 2nd to the inspection report, then it moves to the next car. The green box shows where the next paste goes.</div>`;
   S.groups.forEach((g,gi)=>{const P='groups.'+gi;
     h+=`<div class="grp"><div class="gh"><span>Group ${gi+1}</span><span class="row">${gi>0?`<button class="g s" data-a="gup" data-g="${gi}">↑</button>`:''}<button class="red s" data-a="gdel" data-g="${gi}">Delete group</button></span></div><div class="f">${F(P+'.name','Group name',{w:1})}${F(P+'.sel','Selection line',{w:1})}</div>`;
     g.cars.forEach((c,ci)=>{n++;const C=P+'.cars.'+ci;const key=gi+'-'+ci;
@@ -298,12 +307,8 @@ function renderEditor(){
       ${F(C+'.seats','Seats',{sel:['2','4','5','6','7','8','9','11','12','15','25','45']})}${F(C+'.specs','Specs',{sel:['Korean','GCC','European','US','Japanese','Chinese']})}
       ${F(C+'.engine','Engine',{sel:ENGINES})}${F(C+'.color','Color',{sel:['','White','Black','Silver','Silver gray','Gray','Blue','Red','Brown','Beige','Green','Pearl white']})}
       ${F(C+'.body','Body',{sel:['Sedan','SUV','Hatchback','Van','Truck','Bus','Coupe','Wagon','Pickup']})}${F(C+'.drive','Drive',{sel:['FWD','RWD','AWD','4WD']})}
-      ${F(C+'.reg','First registration',{t:'month'})}${F(C+'.insDate','Inspection date',{t:'date'})}
-      ${F(C+'.clean','No replaced or welded parts',{ck:1,w:1})}${F(C+'.encar','Also confirmed by Encar diagnosis',{ck:1,w:1})}
-      <details class="w"><summary style="font-size:13px;color:var(--muted);cursor:pointer">More (steering, photos link, damage note)</summary><div class="f" style="margin-top:8px">
-      ${F(C+'.steer','Steering',{sel:['Left-hand','Right-hand']})}${F(C+'.diagram','Show standard diagram when no report',{ck:1})}
-      ${F(C+'.url','“View all photos” link (Encar etc.)',{w:1,ph:'https://fem.encar.com/cars/detail/…'})}
-      ${F(C+'.note','Inspection note (e.g. ✕ rear door replaced)',{ta:1,w:1})}</div></details>
+      ${F(C+'.reg','First registration',{t:'month'})}${F(C+'.steer','Steering',{sel:['Left-hand','Right-hand']})}
+      ${F(C+'.url','“View all photos” link (optional)',{w:1,ph:'https://fem.encar.com/cars/detail/…'})}
       </div><div class="row" style="margin-top:8px"><button class="g s" data-a="cup" data-g="${gi}" data-c="${ci}">Move up</button><button class="g s" data-a="cdup" data-g="${gi}" data-c="${ci}">Duplicate</button><button class="red s" data-a="cdel" data-g="${gi}" data-c="${ci}">Delete</button></div></details>`});
     h+=`<button class="g s" data-a="cadd" data-g="${gi}">+ Add car</button></div>`});
   h+=`<div class="row" style="margin-top:10px"><button class="g" data-a="gadd">+ Add group</button></div></div>`;
@@ -314,24 +319,36 @@ const refresh=()=>{clearTimeout(tm);tm=setTimeout(()=>{buildPages();persist()},1
 $('editor').addEventListener('input',e=>{const p=e.target.dataset.p;if(!p)return;set(p,e.target.type==='checkbox'?e.target.checked:e.target.value);refresh();const d=e.target.closest('details.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi].cars[ci];const n=allCars().find(x=>x.c===c).n;d.querySelector('summary').textContent=`${n}. ${label(c)||'New car'} — ${price(c)}`}});
 $('editor').addEventListener('change',async e=>{
   const t=e.target;
-  if(t.dataset.ph){const c=get(t.dataset.ph);msg('Adding photos…');const imgs=await Promise.all([...t.files].map(f=>shrink(f,1220)));c.photos=imgs.filter(Boolean).slice(0,1);msg('');renderEditor();buildPages();persist()}
-  if(t.dataset.dg){const c=get(t.dataset.dg);const im=await shrink(t.files[0],1400,true);if(im){c.diagImg=im;renderEditor();buildPages();persist()}}
+  if(t.dataset.ph&&t.files[0])putImage({c:t.dataset.ph,k:'ph'},t.files[0]);
+  if(t.dataset.dg&&t.files[0])putImage({c:t.dataset.dg,k:'dg'},t.files[0]);
   if(t.dataset.p&&t.type==='checkbox'){set(t.dataset.p,t.checked);refresh()}
 });
+function allSlots(){const out=[];S.groups.forEach((g,gi)=>g.cars.forEach((c,ci)=>{const C='groups.'+gi+'.cars.'+ci;out.push({c:C,k:'ph'},{c:C,k:'dg'})}));return out}
+function firstEmpty(){return allSlots().find(t=>{const c=get(t.c);return t.k==='ph'?!c.photos[0]:!c.diagImg})||null}
+function openFor(t){if(!t)return;const m=t.c.split('.');open.add(m[1]+'-'+m[3])}
+function setTarget(t){target=t;document.querySelectorAll('.drop').forEach(d=>d.classList.toggle('on',!!t&&d.dataset.c===t.c&&d.dataset.drop===t.k))}
+async function putImage(t,file){const c=get(t.c);if(!c)return;msg('Adding image…');
+  if(t.k==='ph'){c.photos=[await shrink(file,1220)]}else{c.diagImg=await shrink(file,1400,true)}
+  const sl=allSlots();const i=sl.findIndex(x=>x.c===t.c&&x.k===t.k);target=sl[i+1]||t;openFor(target);
+  msg(t.k==='ph'?'Car photo added. Next paste → inspection report.':'Inspection report added.');renderEditor();buildPages();persist();
+  const d=document.querySelector('.drop.on');if(d)d.scrollIntoView({block:'center',behavior:'smooth'})}
+document.addEventListener('paste',e=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(!it)return;e.preventDefault();
+  const t=target||firstEmpty();if(!t){msg('All cars already have images. Click a box first, or add a car.');return}putImage(t,it.getAsFile())});
+$('editor').addEventListener('click',e=>{const d=e.target.closest('.drop');if(!d||e.target.closest('.lnk'))return;setTarget({c:d.dataset.c,k:d.dataset.drop});d.focus()},true);
 $('editor').addEventListener('dragover',e=>{const d=e.target.closest('.drop');if(d){e.preventDefault();d.classList.add('over')}});
 $('editor').addEventListener('dragleave',e=>{const d=e.target.closest('.drop');if(d)d.classList.remove('over')});
-$('editor').addEventListener('drop',async e=>{const d=e.target.closest('.drop');if(!d)return;e.preventDefault();const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(!f)return;const c=get(d.dataset.c);
-  if(d.dataset.drop==='ph'){c.photos=[await shrink(f,1220)]}else{c.diagImg=await shrink(f,1400,true)}renderEditor();buildPages();persist()});
+$('editor').addEventListener('drop',async e=>{const d=e.target.closest('.drop');if(!d)return;e.preventDefault();const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(!f)return;putImage({c:d.dataset.c,k:d.dataset.drop},f)});
 $('editor').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.car')){d.open?open.add(d.dataset.k):open.delete(d.dataset.k)}},true);
 $('editor').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;e.preventDefault();
   const a=b.dataset.a,gi=+b.dataset.g,ci=+b.dataset.c,G=S.groups[gi];
-  if(a==='cadd'){G.cars.push(newCar());open.add(gi+'-'+(G.cars.length-1))}
+  if(a==='cadd'){const prev=G.cars[G.cars.length-1];const nc=newCar();if(prev){['fuel','gear','body','drive','seats','specs','steer','year'].forEach(k=>nc[k]=prev[k])}G.cars.push(nc);open.add(gi+'-'+(G.cars.length-1));target={c:'groups.'+gi+'.cars.'+(G.cars.length-1),k:'ph'}}
   if(a==='cdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}G.cars.splice(ci,1);open.clear()}
   if(a==='cdup'){G.cars.splice(ci+1,0,JSON.parse(JSON.stringify(G.cars[ci])));open.clear();open.add(gi+'-'+(ci+1))}
   if(a==='cup'){if(ci>0){[G.cars[ci-1],G.cars[ci]]=[G.cars[ci],G.cars[ci-1]]}else if(gi>0){S.groups[gi-1].cars.push(G.cars.splice(ci,1)[0])}open.clear()}
   if(a==='gadd'){S.groups.push({name:'',sel:'',cars:[newCar()]});open.add((S.groups.length-1)+'-0')}
   if(a==='gdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}S.groups.splice(gi,1);open.clear()}
   if(a==='gup'&&gi>0){[S.groups[gi-1],S.groups[gi]]=[S.groups[gi],S.groups[gi-1]];open.clear()}
+  if(a==='iclr'){const c=get(b.dataset.c);if(b.dataset.k==='ph')c.photos=[];else c.diagImg='';target={c:b.dataset.c,k:b.dataset.k}}
   if(a==='pdel'){get(b.dataset.c).photos.splice(+b.dataset.i,1)}
   renderEditor();buildPages();persist()});
 
@@ -348,7 +365,7 @@ $('bSave').addEventListener('click',()=>{if(dl)give(fname('json'),JSON.stringify
 $('bOpen').addEventListener('click',()=>$('fOpen').click());
 $('fOpen').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.groups||!d.offer)throw 0;S=d;open.clear();renderEditor();buildPages();persist();msg('Draft opened.')}catch(x){msg('That file is not an offer draft.')}e.target.value=''});
 $('bNew').addEventListener('click',e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to clear all cars';setTimeout(()=>{delete b.dataset.sure;b.textContent='New offer'},4000);return}
-  delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};open=new Set(['0-0']);renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
+  delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};open=new Set(['0-0']);target={c:'groups.0.cars.0',k:'ph'};renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
 
 $('bPdf').addEventListener('click',async()=>{
   if(!dl)return;if(!window.html2canvas||!window.jspdf){msg('PDF tools did not load. Reload the page.');return}
@@ -371,7 +388,7 @@ $('bPdf').addEventListener('click',async()=>{
   finally{document.documentElement.classList.remove('exporting');scale()}
 });
 
-renderEditor();buildPages();
+target=firstEmpty();openFor(target);renderEditor();buildPages();
 }
 </script>
 </body>
