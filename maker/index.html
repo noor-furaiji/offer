@@ -38,9 +38,15 @@ button.s{min-height:34px;padding:0 10px;font-size:13px}
 button.red{color:#d33;border-color:#d33;background:transparent}
 .grp{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px;display:grid;gap:8px}
 .grp>.gh{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:800}
-details.car{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
-details.car summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--ink);margin:0}
-details.car[open] summary{margin-bottom:8px}
+.car{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.car.ed,.box.ed,.grp.ed{border:2px solid #16a34a;box-shadow:0 0 0 4px light-dark(#dcfce7,#14301d)}
+.hd{display:flex;align-items:center;gap:10px}
+.hd .ttl{flex:1;font-weight:700;font-size:14px}
+.hd .mini{width:48px;height:36px;border-radius:4px;background:var(--line) center/cover no-repeat;flex:none}
+button.ok2{background:#16a34a;border-color:#16a34a;color:#fff}
+button.fin{width:100%;margin-top:10px;background:#16a34a;border-color:#16a34a;color:#fff;font-size:16px;min-height:48px}
+.sum{color:var(--muted);font-size:14px}
+.box>.hd h2{margin:0;flex:1}
 .thumbs{display:flex;gap:6px;flex-wrap:wrap}
 .thumbs span{width:64px;height:48px;border-radius:4px;background:#ccc center/cover;position:relative}
 .thumbs button{position:absolute;top:-6px;right:-6px;min-height:20px;width:20px;padding:0;border-radius:50%;font-size:12px;line-height:1}
@@ -291,7 +297,7 @@ const F=(path,lab,opt={})=>{const v=get(path);const cls=opt.w?' class="w"':'';
   return `<label${cls}>${lab}<input data-p="${path}" type="${opt.t||'text'}" value="${esc(v)}"${opt.ph?` placeholder="${esc(opt.ph)}"`:''}${opt.im?` inputmode="${opt.im}"`:''}></label>`};
 function get(p){return p.split('.').reduce((o,k)=>o==null?o:o[k],S)}
 function set(p,v){const ks=p.split('.');const last=ks.pop();const o=ks.reduce((o,k)=>o[k],S);o[last]=v}
-let open=new Set();
+let editing=null;
 const LEG=[['X','교환','#e53935'],['W','판금/용접','#5b8fd6'],['C','부식','#f0a030'],['A','흠집','#6d7b96'],['U','요철','#6b6b55'],['T','손상','#9c7b6b']];
 let target=null;let coverN=1,focusPage=0;
 const wide=()=>matchMedia('(min-width:981px)').matches;
@@ -299,18 +305,23 @@ function showPage(i){focusPage=i;const pv=$('pv');const ws=pv.querySelectorAll('
 function pageForEl(el){const d=el.closest('details.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi]&&S.groups[gi].cars[ci];const x=allCars().find(x=>x.c===c);return x?coverN+x.n-1:0}return 0}
 const HIST=[];let typing=null;
 function snap(){const j=JSON.stringify(S);if(HIST[HIST.length-1]!==j){HIST.push(j);if(HIST.length>40)HIST.shift()}const b=document.getElementById('bUndo');if(b)b.disabled=!HIST.length}
-function undo(){if(!HIST.length){msg('Nothing to undo.');return}let j=HIST.pop();if(j===JSON.stringify(S)&&HIST.length)j=HIST.pop();S=JSON.parse(j);typing=null;target=firstEmpty();renderEditor();buildPages();persist();$('bUndo').disabled=!HIST.length;msg('Undone.')} // {c:path,k:'ph'|'dg'}
+function undo(){if(!HIST.length){msg('Nothing to undo.');return}let j=HIST.pop();if(j===JSON.stringify(S)&&HIST.length)j=HIST.pop();S=JSON.parse(j);typing=null;editing=null;target=null;showPage(0);renderEditor();buildPages();persist();$('bUndo').disabled=!HIST.length;msg('Undone.')} // {c:path,k:'ph'|'dg'}
 const YEARS=['',...Array.from({length:18},(_,i)=>String(new Date().getFullYear()+1-i))];
 const ENGINES=['','Petrol 1.0 L','Petrol 1.2 L','Petrol 1.4 L','Petrol 1.5 L','Petrol 1.6 L','Petrol 1.6 L Turbo','Petrol 2.0 L','Petrol 2.0 L Turbo','Petrol 2.4 L','Petrol 2.5 L','Petrol 2.5 L Turbo','Petrol 3.0 L','Petrol 3.3 L','Petrol 3.5 L','Diesel 1.6 L','Diesel 2.0 L','Diesel 2.2 L','Diesel 2.5 L','Diesel 3.0 L','Hybrid 1.6 L','Hybrid 2.0 L','Hybrid 2.5 L','LPG 2.0 L','LPG 3.0 L','LPG 3.5 L','Electric'];
 const drop=(C,k,t,img)=>{const on=target&&target.c===C&&target.k===k;return `<div class="drop w${on?' on':''}" data-drop="${k}" data-c="${C}" tabindex="0"><span class="tn"${img?` style="background-image:url('${esc(img)}')"`:''}>${img?'':'+'}</span><span>${t}<small class="on-t">Ready — press Ctrl+V</small><small class="off-t">${img?'Click here, then Ctrl+V to replace':'Click here, then Ctrl+V'}</small><small><label class="lnk">Choose file<input type="file" accept="image/*" data-${k}="${C}"></label>${img?`<span class="lnk" data-a="iclr" data-c="${C}" data-k="${k}">Remove</span>`:''}</small></span></div>`};
 function renderEditor(){
-  const o='offer';let n=0;
-  let h=`<div class="box"><h2>Offer</h2><div class="f">${F(o+'.title','Title',{w:1})}${F(o+'.country','Country')}${F(o+'.date','Date',{t:'date'})}${F(o+'.terms','Prices (cover)',{ph:'FOB · EUR'})}${F(o+'.cur','Currency sign',{sel:['€','$','₩','AED ','USD ','EUR ']})}${F(o+'.priceLabel','Price label (car page)')}${F(o+'.sales','Sales contact')}${F(o+'.intro','Intro text',{ta:1,w:1})}${F(o+'.phone','WhatsApp number')}${F(o+'.site','Website')}${F(o+'.logo','Show AutoMatch logo',{ck:1,w:1})}${F(o+'.request','Add “Didn’t find what you need?” page',{ck:1,w:1})}</div></div>`;
-  h+=`<div class="box"><h2>Groups &amp; cars</h2><div class="tip"><b>Fast way:</b> take a screenshot (Win+Shift+S) → press <b>Ctrl+V</b> on this page. The 1st paste goes to the car photo, the 2nd to the inspection report, then it moves to the next car. The green box shows where the next paste goes.</div>`;
-  S.groups.forEach((g,gi)=>{const P='groups.'+gi;
-    h+=`<div class="grp"><div class="gh"><span>Group ${gi+1}</span><span class="row">${gi>0?`<button class="g s" data-a="gup" data-g="${gi}">↑</button>`:''}<button class="red s" data-a="gdel" data-g="${gi}">Delete group</button></span></div><div class="f">${F(P+'.name','Group name',{w:1})}${F(P+'.sel','Selection line',{w:1})}</div>`;
-    g.cars.forEach((c,ci)=>{n++;const C=P+'.cars.'+ci;const key=gi+'-'+ci;
-      h+=`<details class="car" data-k="${key}"${open.has(key)?' open':''}><summary>${n}. ${esc(label(c)||'New car')} — ${esc(price(c))}</summary><div class="f">
+  const o='offer';let n=0;const E=editing;
+  const edBtn=(id)=>E===id?`<button class="ok2 s" data-a="fin">✓ Finish</button>`:`<button class="g s" data-a="edit" data-id="${id}">Edit</button>`;
+  let h=`<div class="box${E==='offer'?' ed':''}"><div class="hd"><h2>Offer</h2>${edBtn('offer')}</div>`;
+  if(E==='offer')h+=`<div class="f" style="margin-top:10px">${F(o+'.title','Title',{w:1})}${F(o+'.country','Country')}${F(o+'.date','Date',{t:'date'})}${F(o+'.terms','Prices (cover)',{ph:'FOB · EUR'})}${F(o+'.cur','Currency sign',{sel:['€','$','₩','AED ','USD ','EUR ']})}${F(o+'.priceLabel','Price label (car page)')}${F(o+'.sales','Sales contact')}${F(o+'.intro','Intro text',{ta:1,w:1})}${F(o+'.phone','WhatsApp number')}${F(o+'.site','Website')}${F(o+'.logo','Show AutoMatch logo',{ck:1,w:1})}${F(o+'.request','Add “Didn’t find what you need?” page',{ck:1,w:1})}</div><button class="fin" data-a="fin">✓ Finish</button>`;
+  else h+=`<p class="sum">${esc([S.offer.title,S.offer.country,fDate(S.offer.date)].filter(Boolean).join(' · ')||'No title yet')}</p>`;
+  h+=`</div><div class="box"><h2>Groups &amp; cars</h2><div class="tip"><b>Fast way:</b> click <b>Edit</b> on a car → take a screenshot (Win+Shift+S) → press <b>Ctrl+V</b>. 1st paste = car photo, 2nd = inspection report. Press <b>Finish</b> when done.</div>`;
+  S.groups.forEach((g,gi)=>{const P='groups.'+gi,gid='g:'+gi;
+    h+=`<div class="grp${E===gid?' ed':''}"><div class="hd"><span class="ttl">Group ${gi+1}: ${esc(g.name||'—')}</span>${edBtn(gid)}</div>`;
+    if(E===gid)h+=`<div class="f">${F(P+'.name','Group name',{w:1})}${F(P+'.sel','Selection line',{w:1})}</div><div class="row">${gi>0?`<button class="g s" data-a="gup" data-g="${gi}">Move up</button>`:''}<button class="red s" data-a="gdel" data-g="${gi}">Delete group</button></div><button class="fin" data-a="fin">✓ Finish</button>`;
+    g.cars.forEach((c,ci)=>{n++;const C=P+'.cars.'+ci;const key=gi+'-'+ci,cid='c:'+key;const on=E===cid;
+      h+=`<div class="car${on?' ed':''}" data-k="${key}"><div class="hd"><span class="mini"${c.photos[0]?` style="background-image:url('${esc(c.photos[0])}')"`:''}></span><span class="ttl">${n}. ${esc(label(c)||'New car')} — ${esc(price(c))}</span>${edBtn(cid)}</div>`;
+      if(on)h+=`<div class="f" style="margin-top:10px">
       ${drop(C,'ph','Car photo',c.photos[0])}${drop(C,'dg','Inspection report',c.diagImg)}
       ${F(C+'.name','Model name',{w:1,ph:'Kia K5 (3rd gen) 2.0 Trendy'})}${F(C+'.price','Price',{im:'decimal'})}${F(C+'.tag','Badge',{sel:['','Low mileage','New generation','Newest','Newer model','Best price','Exclusive','Full option','Newest · Exclusive']})}
       ${F(C+'.year','Year',{sel:YEARS})}${F(C+'.km','Mileage (km)',{im:'numeric'})}${F(C+'.fuel','Fuel',{sel:['Petrol','Diesel','Hybrid','LPG','Electric']})}${F(C+'.gear','Gearbox',{sel:['Automatic','Manual']})}
@@ -319,14 +330,18 @@ function renderEditor(){
       ${F(C+'.body','Body',{sel:['Sedan','SUV','MPV / Minivan','Hatchback','Van','Truck','Bus','Coupe','Wagon','Pickup']})}${F(C+'.drive','Drive',{sel:['FWD','RWD','AWD','4WD']})}
       ${F(C+'.reg','First registration',{t:'month'})}${F(C+'.steer','Steering',{sel:['Left-hand','Right-hand']})}
       ${F(C+'.url','“View all photos” link (optional)',{w:1,ph:'https://fem.encar.com/cars/detail/…'})}
-      </div><div class="row" style="margin-top:8px"><button class="g s" data-a="cup" data-g="${gi}" data-c="${ci}">Move up</button><button class="g s" data-a="cdup" data-g="${gi}" data-c="${ci}">Duplicate</button><button class="red s" data-a="cdel" data-g="${gi}" data-c="${ci}">Delete</button></div></details>`});
+      </div><div class="row" style="margin-top:8px"><button class="g s" data-a="cup" data-g="${gi}" data-c="${ci}">Move up</button><button class="g s" data-a="cdup" data-g="${gi}" data-c="${ci}">Duplicate</button><button class="red s" data-a="cdel" data-g="${gi}" data-c="${ci}">Delete</button></div><button class="fin" data-a="fin">✓ Finish</button>`;
+      h+=`</div>`});
     h+=`<button class="g s" data-a="cadd" data-g="${gi}">+ Add car</button></div>`});
   h+=`<div class="row" style="margin-top:10px"><button class="g" data-a="gadd">+ Add group</button></div></div>`;
   $('editor').innerHTML=h;
 }
+function edPage(){if(editing&&editing.startsWith('c:')){const [gi,ci]=editing.slice(2).split('-');const c=S.groups[gi]&&S.groups[gi].cars[ci];const x=allCars().find(x=>x.c===c);return x?coverN+x.n-1:0}return 0}
+function startEdit(id){editing=id;if(id.startsWith('c:')){const [gi,ci]=id.slice(2).split('-');const C='groups.'+gi+'.cars.'+ci;const c=get(C);target={c:C,k:c.photos[0]&&!c.diagImg?'dg':'ph'}}else target=null;renderEditor();showPage(edPage());const el=document.querySelector('#editor .ed');if(el)el.scrollIntoView({block:'start',behavior:'smooth'})}
+function finish(){const was=editing;editing=null;target=null;renderEditor();showPage(0);msg('Saved.');if(was&&was.startsWith('c:')){const el=document.querySelector(`.car[data-k="${was.slice(2)}"]`);if(el)el.scrollIntoView({block:'center',behavior:'smooth'})}}
 let tm;
 const refresh=()=>{clearTimeout(tm);tm=setTimeout(()=>{buildPages();persist()},180)};
-$('editor').addEventListener('input',e=>{const p=e.target.dataset.p;if(!p)return;if(!typing)snap();clearTimeout(typing);typing=setTimeout(()=>{typing=null},1200);set(p,e.target.type==='checkbox'?e.target.checked:e.target.value);refresh();const d=e.target.closest('details.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi].cars[ci];const n=allCars().find(x=>x.c===c).n;d.querySelector('summary').textContent=`${n}. ${label(c)||'New car'} — ${price(c)}`}});
+$('editor').addEventListener('input',e=>{const p=e.target.dataset.p;if(!p)return;if(!typing)snap();clearTimeout(typing);typing=setTimeout(()=>{typing=null},1200);set(p,e.target.type==='checkbox'?e.target.checked:e.target.value);refresh();const d=e.target.closest('.car');if(d){const [gi,ci]=d.dataset.k.split('-');const c=S.groups[gi].cars[ci];const n=allCars().find(x=>x.c===c).n;d.querySelector('.ttl').textContent=`${n}. ${label(c)||'New car'} — ${price(c)}`}});
 $('editor').addEventListener('change',async e=>{
   const t=e.target;
   if(t.dataset.ph&&t.files[0])putImage({c:t.dataset.ph,k:'ph'},t.files[0]);
@@ -335,32 +350,27 @@ $('editor').addEventListener('change',async e=>{
 });
 function allSlots(){const out=[];S.groups.forEach((g,gi)=>g.cars.forEach((c,ci)=>{const C='groups.'+gi+'.cars.'+ci;out.push({c:C,k:'ph'},{c:C,k:'dg'})}));return out}
 function firstEmpty(){return allSlots().find(t=>{const c=get(t.c);return t.k==='ph'?!c.photos[0]:!c.diagImg})||null}
-function openFor(t){if(!t)return;const m=t.c.split('.');open.add(m[1]+'-'+m[3])}
 function setTarget(t){target=t;document.querySelectorAll('.drop').forEach(d=>d.classList.toggle('on',!!t&&d.dataset.c===t.c&&d.dataset.drop===t.k))}
 async function putImage(t,file){const c=get(t.c);if(!c)return;snap();msg('Adding image…');
   if(t.k==='ph'){c.photos=[await shrink(file,1220)]}else{c.diagImg=await shrink(file,1400,true)}
-  const sl=allSlots();const i=sl.findIndex(x=>x.c===t.c&&x.k===t.k);target=sl[i+1]||t;openFor(target);
+  const sl=allSlots();const i=sl.findIndex(x=>x.c===t.c&&x.k===t.k);target=t.k==='ph'?{c:t.c,k:'dg'}:t;
   msg(t.k==='ph'?'Car photo added. Next paste → inspection report.':'Inspection report added.');renderEditor();buildPages();persist();
   const d=document.querySelector('.drop.on');if(d)d.scrollIntoView({block:'center',behavior:'smooth'});const tc=get(t.c);const x=allCars().find(x=>x.c===tc);if(x)showPage(coverN+x.n-1)}
 document.addEventListener('paste',e=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(!it)return;e.preventDefault();
-  const t=target||firstEmpty();if(!t){msg('All cars already have images. Click a box first, or add a car.');return}putImage(t,it.getAsFile())});
+  if(!editing||!editing.startsWith('c:')){msg('Click Edit on a car first, then paste.');return}const t=target||{c:'groups.'+editing.slice(2).split('-')[0]+'.cars.'+editing.slice(2).split('-')[1],k:'ph'};putImage(t,it.getAsFile())});
 $('editor').addEventListener('click',e=>{const d=e.target.closest('.drop');if(!d||e.target.closest('.lnk'))return;setTarget({c:d.dataset.c,k:d.dataset.drop});d.focus()},true);
-$('editor').addEventListener('focusin',e=>showPage(pageForEl(e.target)));
-$('editor').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.car')){if(d.open)showPage(pageForEl(d));else showPage(0)}},true);
-document.addEventListener('focusout',()=>setTimeout(()=>{if(!$('editor').contains(document.activeElement))showPage(0)},250));
 $('editor').addEventListener('dragover',e=>{const d=e.target.closest('.drop');if(d){e.preventDefault();d.classList.add('over')}});
 $('editor').addEventListener('dragleave',e=>{const d=e.target.closest('.drop');if(d)d.classList.remove('over')});
 $('editor').addEventListener('drop',async e=>{const d=e.target.closest('.drop');if(!d)return;e.preventDefault();const f=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(!f)return;putImage({c:d.dataset.c,k:d.dataset.drop},f)});
-$('editor').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.car')){d.open?open.add(d.dataset.k):open.delete(d.dataset.k)}},true);
 $('editor').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;e.preventDefault();
-  const a=b.dataset.a,gi=+b.dataset.g,ci=+b.dataset.c;if((a==='cdel'||a==='gdel')&&!b.dataset.sure){}else snap();const G=S.groups[gi];
-  if(a==='cadd'){const prev=G.cars[G.cars.length-1];const nc=newCar();if(prev){['fuel','gear','body','drive','seats','specs','steer','year'].forEach(k=>nc[k]=prev[k])}G.cars.push(nc);open.add(gi+'-'+(G.cars.length-1));target={c:'groups.'+gi+'.cars.'+(G.cars.length-1),k:'ph'}}
-  if(a==='cdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}G.cars.splice(ci,1);open.clear()}
-  if(a==='cdup'){G.cars.splice(ci+1,0,JSON.parse(JSON.stringify(G.cars[ci])));open.clear();open.add(gi+'-'+(ci+1))}
-  if(a==='cup'){if(ci>0){[G.cars[ci-1],G.cars[ci]]=[G.cars[ci],G.cars[ci-1]]}else if(gi>0){S.groups[gi-1].cars.push(G.cars.splice(ci,1)[0])}open.clear()}
-  if(a==='gadd'){S.groups.push({name:'',sel:'',cars:[newCar()]});open.add((S.groups.length-1)+'-0')}
-  if(a==='gdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}S.groups.splice(gi,1);open.clear()}
-  if(a==='gup'&&gi>0){[S.groups[gi-1],S.groups[gi]]=[S.groups[gi],S.groups[gi-1]];open.clear()}
+  const a=b.dataset.a,gi=+b.dataset.g,ci=+b.dataset.c;if(a==='edit'){startEdit(b.dataset.id);return}if(a==='fin'){finish();return}if((a==='cdel'||a==='gdel')&&!b.dataset.sure){}else snap();const G=S.groups[gi];
+  if(a==='cadd'){const prev=G.cars[G.cars.length-1];const nc=newCar();if(prev){['fuel','gear','body','drive','seats','specs','steer','year'].forEach(k=>nc[k]=prev[k])}G.cars.push(nc);buildPages();persist();startEdit('c:'+gi+'-'+(G.cars.length-1));return}
+  if(a==='cdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}G.cars.splice(ci,1);editing=null;target=null;showPage(0)}
+  if(a==='cdup'){G.cars.splice(ci+1,0,JSON.parse(JSON.stringify(G.cars[ci])));buildPages();persist();startEdit('c:'+gi+'-'+(ci+1));return}
+  if(a==='cup'){if(ci>0){[G.cars[ci-1],G.cars[ci]]=[G.cars[ci],G.cars[ci-1]]}else if(gi>0){S.groups[gi-1].cars.push(G.cars.splice(ci,1)[0])}editing=null;target=null}
+  if(a==='gadd'){S.groups.push({name:'',sel:'',cars:[newCar()]});buildPages();persist();startEdit('g:'+(S.groups.length-1));return}
+  if(a==='gdel'){if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to delete';return}S.groups.splice(gi,1);editing=null;showPage(0)}
+  if(a==='gup'&&gi>0){[S.groups[gi-1],S.groups[gi]]=[S.groups[gi],S.groups[gi-1]];editing=null}
   if(a==='iclr'){const c=get(b.dataset.c);if(b.dataset.k==='ph')c.photos=[];else c.diagImg='';target={c:b.dataset.c,k:b.dataset.k}}
   if(a==='pdel'){get(b.dataset.c).photos.splice(+b.dataset.i,1)}
   renderEditor();buildPages();persist()});
@@ -376,11 +386,12 @@ async function give(name,data){try{await dl.save({filename:name,data});msg('Save
 const fname=ext=>('AutoMatch_Offer_'+(S.offer.country||'')+'_'+(S.offer.date||'')).replace(/[^\w\-]+/g,'_').replace(/_+/g,'_').replace(/_$/,'')+'.'+ext;
 $('bSave').addEventListener('click',()=>{if(dl)give(fname('json'),JSON.stringify(S))});
 $('bUndo').addEventListener('click',undo);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&editing){e.preventDefault();finish()}});
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key.toLowerCase()==='z'){const t=document.activeElement;if(t&&(t.tagName==='INPUT'&&!['checkbox','file'].includes(t.type)||t.tagName==='TEXTAREA'))return;e.preventDefault();undo()}});
 $('bOpen').addEventListener('click',()=>$('fOpen').click());
-$('fOpen').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.groups||!d.offer)throw 0;snap();S=d;open.clear();renderEditor();buildPages();persist();msg('Draft opened.')}catch(x){msg('That file is not an offer draft.')}e.target.value=''});
+$('fOpen').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.groups||!d.offer)throw 0;snap();S=d;editing=null;renderEditor();buildPages();persist();msg('Draft opened.')}catch(x){msg('That file is not an offer draft.')}e.target.value=''});
 $('bNew').addEventListener('click',e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to clear all cars';setTimeout(()=>{delete b.dataset.sure;b.textContent='New offer'},4000);return}
-  snap();delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};open=new Set(['0-0']);target={c:'groups.0.cars.0',k:'ph'};renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
+  snap();delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};editing=null;target=null;renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
 
 $('bPdf').addEventListener('click',async()=>{
   if(!dl)return;if(!window.html2canvas||!window.jspdf){msg('PDF tools did not load. Reload the page.');return}
@@ -403,7 +414,7 @@ $('bPdf').addEventListener('click',async()=>{
   finally{document.documentElement.classList.remove('exporting');scale()}
 });
 
-target=firstEmpty();openFor(target);renderEditor();buildPages();
+renderEditor();buildPages();
 }
 </script>
 </body>
