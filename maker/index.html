@@ -248,7 +248,7 @@ function detailHTML(x){
   <div class="pbx"><span>${esc(priceL())}</span><b>${esc(price(c))}</b></div></div>
   <div class="st"><div><span>Model year</span>${esc(c.year||'—')}</div><div><span>Mileage</span>${esc(num(c.km)?num(c.km)+' km':'—')}</div><div><span>Seats</span>${esc(c.seats?c.seats+' seats':'—')}</div><div><span>Gearbox</span>${esc(c.gear||'—')}</div></div>
   <div class="pg one"><div${bgi(ph[0])}></div></div>
-  <div class="lo"><div><h3>Specifications</h3><table class="sp"><tbody>${[['Engine',c.engine],['First registration',fReg(c.reg)],['Body / drive',[c.body,c.drive].filter(Boolean).join(' · ')],['Color',c.color],['Steering',c.steer],['Specs',c.specs]].filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table></div>
+  <div class="lo"><div><h3>Specifications</h3><table class="sp"><tbody>${[['Engine',c.engine],['First registration',fReg(c.reg)],['Body / drive',[c.body,c.drive].filter(Boolean).join(' · ')],['Color',c.color],['Steering',c.steer]].filter(r=>r[1]).map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table></div>
   <div class="ins"><h3>Vehicle condition — inspection report</h3>${c.diagImg?`<div class="shot" style="background-image:url('${esc(c.diagImg)}')"></div>`:`<div class="shot no">Inspection report</div>`}
   <div class="lg2">${LEG.map(([l,t,col])=>`<span><i style="background:${col}">${l}</i>${t}</span>`).join('')}</div></div></div>
   <div class="bt">${safeUrl(c.url)?`<a class="bo" href="${esc(c.url)}" target="_blank" rel="noopener">View all photos</a>`:`<a class="bo" href="${esc(wa(`Hello ${o.sales}, please send me all photos of car #${x.n} ${label(c)}.`))}" target="_blank" rel="noopener">View all photos</a>`}<a class="bg" href="${esc(wa(selMsg(x)))}" target="_blank" rel="noopener">✓ Tap here to select this vehicle</a></div>
@@ -332,7 +332,7 @@ function renderEditor(){
       ${drop(C,'ph','Car photo',c.photos[0])}${drop(C,'dg','Inspection report',c.diagImg)}
       ${F(C+'.name','Model name',{w:1,ph:'Kia K5 (3rd gen) 2.0 Trendy'})}${F(C+'.price','Price',{im:'decimal'})}${F(C+'.tag','Badge',{sel:['','Low mileage','New generation','Newest','Newer model','Best price','Exclusive','Full option','Newest · Exclusive']})}
       ${F(C+'.year','Year',{sel:YEARS})}${F(C+'.km','Mileage (km)',{im:'numeric'})}${F(C+'.fuel','Fuel',{sel:['Petrol','Diesel','Hybrid','LPG','Electric']})}${F(C+'.gear','Gearbox',{sel:['Automatic','Manual']})}
-      ${F(C+'.seats','Seats',{sel:['2','4','5','6','7','8','9','11','12','15','25','45']})}${F(C+'.specs','Specs',{sel:['Korean','GCC','European','US','Japanese','Chinese']})}
+      ${F(C+'.seats','Seats',{sel:['2','4','5','6','7','8','9','11','12','15','25','45']})}
       ${F(C+'.engine','Engine',{sel:ENGINES})}${F(C+'.color','Color',{sel:['','White','Black','Silver','Silver gray','Gray','Blue','Red','Brown','Beige','Green','Pearl white']})}
       ${F(C+'.body','Body',{sel:['Sedan','SUV','MPV / Minivan','Hatchback','Van','Truck','Bus','Coupe','Wagon','Pickup']})}${F(C+'.drive','Drive',{sel:['FWD','RWD','AWD','4WD']})}
       ${F(C+'.reg','First registration',{t:'month'})}${F(C+'.steer','Steering',{sel:['Left-hand','Right-hand']})}
