@@ -190,7 +190,7 @@ const MONTHS=['January','February','March','April','May','June','July','August',
 
 const newCar=()=>({name:'',tag:'',year:'',km:'',fuel:'Petrol',body:'Sedan',drive:'FWD',gear:'Automatic',seats:'5',engine:'',reg:'',color:'',steer:'Left-hand',specs:'Korean',price:'',photos:[],url:'',insDate:'',clean:true,encar:true,diagram:true,diagImg:'',note:''});
 const car=(o)=>Object.assign(newCar(),o);
-const SAMPLE={offer:{title:'Used Sedans from Korea · 2021+',country:'Bulgaria',date:'2026-11-23',terms:'FOB · EUR',cur:'€',priceLabel:'FOB price',intro:'Choose a vehicle and tap “Select ✓” — your choice reaches us directly on WhatsApp. Didn’t find what you need? Send your specs on the last page.',sales:'Noor',phone:'+82 10-5189-9201',company:'AutoMatch Korea',site:'automatchkorea.com',logo:true,request:true},
+const SAMPLE={offer:{title:'Used Sedans from Korea · 2021+',country:'Bulgaria',date:'2026-11-23',terms:'FOB · USD',cur:'$',inc:'FOB',priceLabel:'FOB price',intro:'Choose a vehicle and tap “Select ✓” — your choice reaches us directly on WhatsApp. Didn’t find what you need? Send your specs on the last page.',sales:'Noor',phone:'+82 10-5189-9201',company:'AutoMatch Korea',site:'automatchkorea.com',logo:true,request:true},
 groups:[{name:'Mid-size: Kia K5 / Hyundai Sonata',sel:'Selection: Model 2021+ · petrol · automatic',cars:[
  car({name:'Kia K5 (3rd gen) 2.0 Trendy',tag:'New generation',year:'2021',km:'10358',engine:'Petrol 2.0 L',reg:'2021-05',color:'Black',price:'12600',insDate:'2026-09-30'}),
  car({name:'Hyundai Sonata DN8 2.0 Premium',tag:'Low mileage',year:'2021',km:'14938',engine:'Petrol 2.0 L',reg:'2020-11',color:'Silver gray',price:'11650',insDate:'2026-08-19'})]},
@@ -398,7 +398,7 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&
 $('bOpen').addEventListener('click',()=>$('fOpen').click());
 $('fOpen').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d.groups||!d.offer)throw 0;snap();S=d;editing=null;renderEditor();buildPages();persist();msg('Draft opened.')}catch(x){msg('That file is not an offer draft.')}e.target.value=''});
 $('bNew').addEventListener('click',e=>{const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Tap again to clear all cars';setTimeout(()=>{delete b.dataset.sure;b.textContent='New offer'},4000);return}
-  snap();delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};editing=null;target=null;renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
+  snap();delete b.dataset.sure;b.textContent='New offer';const keep=Object.assign({},S.offer,{title:'',country:'',cur:'$',inc:'FOB',terms:'FOB · USD',date:new Date().toISOString().slice(0,10)});S={offer:keep,groups:[{name:'',sel:'',cars:[newCar()]}]};editing=null;target=null;renderEditor();buildPages();persist();msg('New offer started. Your contact details are kept.')});
 
 $('bPdf').addEventListener('click',async()=>{
   if(!dl)return;if(!window.html2canvas||!window.jspdf){msg('PDF tools did not load. Reload the page.');return}
